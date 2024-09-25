@@ -22,7 +22,7 @@ const LoginSignup:React.FC<ContainerProps> = ({
 
   }
   return (
-    <div className='w-screen h-screen flex justify-center items-center bg-gradient-to-l from-purple-400 to-pink-400 dark:bg-gradient-to-l dark:from-[#0e0e0e] dark:to-[#080808]'>
+    <div className='w-screen h-screen flex justify-center items-center bg-primary-6 dark:bg-dark-1'>
       <div className="absolute top-5 right-5">
         {darkMode ? 
           <WbSunnyIcon onClick={toggleDarkMode} className='text-3xl cursor-pointer' /> : 

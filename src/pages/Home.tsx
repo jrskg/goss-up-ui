@@ -1,21 +1,36 @@
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom"
+import MainLayout from "@/layouts/MainLayout";
+import { toast } from "sonner";
 
 const Home = () => {
-  const navigate = useNavigate();
+  const handleClick = (text:string) => {
+    switch (text) {
+      case "success":
+        toast.success("Success", {
+          description: "This is a description",
+          action:{
+            label: "Action",
+            onClick: () => console.log("Action")
+          }
+        })
+        break;    
+      case "error":
+        toast.error("Error")
+        break;
+      case "info":
+        toast.info("Info")
+        break;
+      case "warning":
+        toast.warning("Warning")
+        break;
+    }
+  }
   return (
-    <div className="flex items-center justify-center h-screen">
-      <Button
-        className="bg-green-500 hover:bg-green-600 m-1"
-        size={"lg"}
-        onClick={() => navigate("/login")}
-      >Login</Button>
-      <Button
-        className="bg-green-500 hover:bg-green-600 m-1"
-        size={"lg"}
-        onClick={() => navigate("/signup")}
-      >Sign Up</Button>
-    </div>
+    <MainLayout>
+      <h1 onClick={() => handleClick("success")}>Success</h1>
+      <h1 onClick={() => handleClick("error")}>Error</h1>
+      <h1 onClick={() => handleClick("info")}>Info</h1>
+      <h1 onClick={() => handleClick("warning")}>Warning</h1>
+    </MainLayout>
   )
 }
 

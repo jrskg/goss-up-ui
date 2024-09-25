@@ -1,21 +1,59 @@
+import MyButton from '@/components/MyButton';
 import MyInput from '@/components/MyInput';
-import { Button } from '@/components/ui/button';
+import { useAppSelector } from '@/hooks/hooks';
+import { useAuthActions } from '@/hooks/userHooks';
+import { LoginParams } from '@/interface/interface';
 import LoginSignup from '@/layouts/LoginSignup';
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { generateFCMToken } from '@/notifications/firebase';
+import { validateEmail, validatePassword } from '@/utils/validation';
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
-const Login: React.FC = () => {
+interface LoginProps {
+  auhtLoading?: boolean
+}
+
+const Login: React.FC<LoginProps> = ({auhtLoading}) => {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [emailError, setEmailError] = useState<string>('');
   const [passwordError, setPasswordError] = useState<string>('');
-  const handleLogin = () => {
-    if (!email) {
-      setEmailError('Email is required')
-    } else setEmailError('')
-    if (!password) {
-      setPasswordError('Password is required')
-    } else setPasswordError('')
+  const {isAuthenticated} = useAppSelector(state => state.user);
+  const navigate = useNavigate();
+  const {loading, setLoading, login} = useAuthActions();
+
+  useEffect(() => {
+    if(isAuthenticated) {
+      navigate("/");
+    }
+  }, [isAuthenticated, navigate])
+
+  const validateInputs = ():boolean => {
+    const emailCheck = validateEmail(email);
+    setEmailError(emailCheck.error);
+    const passwordCheck = validatePassword(password);
+    setPasswordError(passwordCheck.error);
+    return emailCheck.isValid && passwordCheck.isValid;
+  }
+  const handleLogin = async() => {
+    if(!validateInputs()) return;
+    const data:LoginParams = {
+      email,
+      password
+    }
+    if(Notification.permission === 'granted') {
+      console.log("Granted");
+      setLoading(true);
+      const fcmToken = await generateFCMToken();
+      if(fcmToken) {
+        data.pushOptions = {
+          token: fcmToken,
+          platform: "web"
+        }
+      }
+      setLoading(false);
+    }
+    await login(data);
   }
   return (
     <LoginSignup>
@@ -27,6 +65,7 @@ const Login: React.FC = () => {
           label="Email"
           placeholder="Email"
           error={emailError}
+          disabled={loading || auhtLoading}
         />
         <MyInput
           value={password}
@@ -35,12 +74,13 @@ const Login: React.FC = () => {
           placeholder="Password"
           type='password'
           error={passwordError}
+          disabled={loading || auhtLoading}
         />
-        <Button
-          className='bg-green-500 hover:bg-green-600 text-xl w-[100%] mt-3'
-          size={"lg"}
+        <MyButton
           onClick={handleLogin}
-        >Submit</Button>
+          title="Login"
+          loading={loading || auhtLoading}
+        />
         <div className='mt-3 w-full flex flex-col items-center'>
           <Link
             className='text-xl text-blue-500 font-bold mt-3 self-end'
