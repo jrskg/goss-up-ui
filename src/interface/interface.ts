@@ -3,16 +3,18 @@ export interface Image {
   publicId: string;
   avatar: string;
 }
+export type Theme = "light" | "dark";
+export type UserStatus = "online" | "offline";
 
 export interface IUser {
   name: string;
   email: string;
   bio: string;
   profilePic?: Image
-  status: "online" | "offline";
+  status: UserStatus;
   settings: {
     notificationEnabled: boolean;
-    theme: "light" | "dark";
+    theme: Theme;
     soundEnabled: boolean;
   }
   lastSeen: Date;
@@ -35,9 +37,9 @@ export interface LoginResponse extends ResponseWithoutData {
   } | IUser
 }
 
-// export interface LoadUserResponse extends ResponseWithoutData {
-//   data: IUser
-// }
+export interface LoadUserResponse extends ResponseWithoutData {
+  data: IUser
+}
 
 export type PushPlatform = "web" | "android" | "ios";
 export interface PushToken {

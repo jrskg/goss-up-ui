@@ -1,4 +1,5 @@
 import axios from "axios";
+import { toast } from "sonner";
 
 const baseUrl = "http://localhost:3000/api/v1";
 
@@ -7,20 +8,15 @@ const instance = axios.create({
   withCredentials: true
 });
 
-// instance.interceptors.request.use(async (config:InternalAxiosRequestConfig<any>) => {
-//   if(!navigator.onLine){
-//     toast.error("No internet connection", {
-//       description: "Please check your internet connection and try again",
-//     });
-//     return Promise.reject({
-//       errorType:CONNECTION_ERROR,
-//       netInfo:navigator.onLine
-//     });
-//   }
-//   return config;
-// }, (error) => {
-//   console.log("Error in inceptor second cb", error);
-//   return Promise.reject(error);
-// })
+//will be testing it after deploying
+instance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (!error.message && error.message === "Network Error") {
+      toast.error("Network Error. Please check your internet connection");
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default instance;

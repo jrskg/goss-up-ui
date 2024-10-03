@@ -6,18 +6,18 @@ import { AxiosError } from "axios";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { useAppDispatch, useConnection } from "./hooks";
+import { useAppDispatch } from "./hooks";
 import { useLocalStorageForRoute } from "./useLocalStorage";
+import { toggleDarkMode } from "@/utils/utility";
 
 export const useAuthActions = () => {
   const [loading, setLoading] = useState(false);
-  const { checkConnection } = useConnection();
+  // const { checkConnection } = useConnection();
   const dispatch = useAppDispatch();
   const {setVerificationAccess, removeRouteItem} = useLocalStorageForRoute();
   const navigate = useNavigate();
 
   const register = async (formBody: { name: string, email: string, password: string }): Promise<void> => {
-    if (!checkConnection()) return;
     try {
       setLoading(true);
       const { data } = await instance.post<RegisterResponse>("/user/register", formBody);
@@ -36,7 +36,6 @@ export const useAuthActions = () => {
   }
 
   const requestVerificationEmail = async (): Promise<void> => {
-    if (!checkConnection()) return;
     try {
       setLoading(true);
       const { data } = await instance.post<ResponseWithoutData>("/user/request-verification");
@@ -54,7 +53,6 @@ export const useAuthActions = () => {
   }
 
   const login = async (formBody: LoginParams): Promise<void> => {
-    if (!checkConnection()) return;
     try {
       const { data } = await instance.post<LoginResponse>("/user/login", formBody);
       if (data.success) {
@@ -62,6 +60,7 @@ export const useAuthActions = () => {
           dispatch(setUser(data.data));
           removeRouteItem("isVerificationAccessible");
           removeRouteItem("isStepperAccessible");
+          toggleDarkMode(data.data.settings.theme === "dark");
         }else{
           setVerificationAccess(true);
           navigate("/operation-info/login");
@@ -77,8 +76,7 @@ export const useAuthActions = () => {
     }
   }
 
-  const loadUser = async (): Promise<void> => {
-    if (!checkConnection()) return;
+  const loadUser = async (): Promise<void> => {    
     try {
       setLoading(true);
       const { data } = await instance.get<LoginResponse>("/user/me");
@@ -87,6 +85,7 @@ export const useAuthActions = () => {
           dispatch(setUser(data.data));
           removeRouteItem("isVerificationAccessible");
           removeRouteItem("isStepperAccessible");
+          toggleDarkMode(data.data.settings.theme === "dark");
         }else{
           setVerificationAccess(true);
           navigate("/operation-info/login");
@@ -102,7 +101,6 @@ export const useAuthActions = () => {
   }
 
   const logout = async (platform: PushPlatform): Promise<void> => {
-    if (!checkConnection()) return;
     try {
       setLoading(true);
       const { data } = await instance.post<ResponseWithoutData>("/user/logout", { platform });

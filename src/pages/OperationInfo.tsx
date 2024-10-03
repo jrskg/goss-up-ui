@@ -1,8 +1,8 @@
-import { useParams } from "react-router-dom";
-import CheckIcon from '@mui/icons-material/Check';
-import Info from "@/layouts/Info";
 import MyButton from "@/components/MyButton";
 import { useAuthActions } from "@/hooks/userHooks";
+import Info from "@/layouts/Info";
+import { Check } from "lucide-react";
+import { useParams } from "react-router-dom";
 
 const OperationInfo: React.FC = () => {
   const { type } = useParams<{ type: string }>();
@@ -19,7 +19,7 @@ const OperationInfo: React.FC = () => {
           <h1 className="text-3xl font-bold">User Registration Complete</h1>
           <p className="text-xl mt-3">We have sent you an email with a link to verify your account.</p>
           <p className="text-xl mt-2">Please check your email</p>
-          <CheckIcon className='text-green-500 mt-3' sx={{ fontSize: 100, alignSelf: 'center' }} />
+          <Check className='text-green-500 mt-3' size={40} />
         </>
       case "login":
         return <>

@@ -1,4 +1,4 @@
-type returnType = {
+export type returnType = {
   isValid: boolean,
   error: string
 }
@@ -27,7 +27,7 @@ const validateEmail = (email: string): returnType => {
     isValid: true,
     error: ''
   };
-  const regex: RegExp = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+  const regex: RegExp = /^[A-Za-z][A-Za-z0-9._%+-]*@[A-Za-z]+\.[A-Za-z]{2,}$/;
   if (email.trim() == '') {
     response.isValid = false;
     response.error = 'Please enter email';

@@ -2,7 +2,7 @@ import Loader from "@/components/Loader";
 import MyButton from "@/components/MyButton";
 import { useAppDispatch } from "@/hooks/hooks";
 import { useLocalStorageForRoute } from "@/hooks/useLocalStorage";
-import { LoadUserResponse } from "@/interface/interface";
+import type { LoadUserResponse } from "@/interface/interface";
 import Info from "@/layouts/Info";
 import { setJustUser } from "@/redux/slices/user";
 import instance from "@/utils/axiosInstance";

@@ -15,7 +15,7 @@ const NavigationTab:React.FC<NavigationTabProps> = ({
 }) => {
   return (
     <div 
-      className={`${isActive ? "bg-[#8d8d8d91]" : "bg-transparent"} min-w-[70px] h-[70px] flex flex-col justify-center items-center rounded-lg cursor-pointer mx-2 md:my-2 md:mx-0 hover:bg-[#8d8d8d91] transition duration-300`}
+      className={`${isActive ? "bg-[#8d8d8d91]" : "bg-transparent"} min-w-[70px] h-[70px] flex flex-col justify-center items-center rounded-lg cursor-pointer md:my-2 hover:bg-[#8d8d8d91] transition duration-300`}
       onClick={onClick}
     >
       {icon}

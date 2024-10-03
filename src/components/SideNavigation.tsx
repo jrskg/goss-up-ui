@@ -1,13 +1,12 @@
+import { useAuthActions } from "@/hooks/userHooks";
+import { BellIcon, CircleUserIcon, LogOutIcon, MessageSquareIcon, UsersIcon } from "lucide-react";
 import React, { useState } from "react";
-import NavigationTab from "./NavigationTab";
-import ChatBubbleRoundedIcon from "@mui/icons-material/ChatBubbleRounded";
-import PeopleIcon from '@mui/icons-material/People';
-import NotificationsIcon from '@mui/icons-material/Notifications';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import LogoutIcon from '@mui/icons-material/Logout';
 import { useNavigate } from "react-router-dom";
+import NavigationTab from "./NavigationTab";
+
 const SideNavigation: React.FC = () => {
   const [tab, setTab] = useState(window.location.pathname);
+  const {logout} = useAuthActions();
 
   const navigate = useNavigate();
   const getColor = (path: string): string => {
@@ -17,34 +16,34 @@ const SideNavigation: React.FC = () => {
     setTab(tab);
     navigate(tab);
   }
-  const handleLogout = () => {
-    alert("Logout")
+  const handleLogout = async () => {
+    await logout("web");
   }
   return (
-    <div className="flex items-center justify-between w-screen h-[90px] fixed bottom-0 md:top-0 md:left-0 md:flex-col md:w-[90px] bg-[#0a1624] pl-12 pr-12 md:h-screen md:pt-12 md:pb-12 dark:bg-[#070707]">
-      <div className="hidden md:block"></div>
-      <div className="flex justify-between items-center w-screen md:flex-col md:w-[unset]">
+    <div className="flex md:rounded-xl items-center justify-between w-screen h-[90px] fixed bottom-0 md:top-[50%] md:transform md:-translate-y-1/2 md:left-2 md:flex-col md:w-[90px] bg-[#192531] md:h-[95%] md:py-12 dark:bg-mixed-1 z-50">
+      <p className="hidden md:block font-bold text-primary-1">GOSS_UP</p>
+      <div className="flex justify-around w-full items-center md:flex-col md:w-[unset]">
         <NavigationTab
           label="All Chats"
-          icon={<ChatBubbleRoundedIcon className={getColor("/")} sx={{ width: 30, height: 30 }} />}
+          icon={<MessageSquareIcon className={getColor("/")} size={25} />}
           isActive={tab === "/"}
           onClick={() => handleNavigation("/")}
         />
         <NavigationTab
           label="Friends"
-          icon={<PeopleIcon className={getColor("/friends")} sx={{ width: 30, height: 30 }} />}
+          icon={<UsersIcon className={getColor("/friends")} size={25} />}
           isActive={tab === "/friends"}
           onClick={() => handleNavigation("/friends")}
         />
         <NavigationTab
           label="Notification"
-          icon={<NotificationsIcon className={getColor("/notifications")} sx={{ width: 30, height: 30 }} />}
+          icon={<BellIcon className={getColor("/notifications")} size={25} />}
           isActive={tab === "/notifications"}
           onClick={() => handleNavigation("/notifications")}
         />
         <NavigationTab
           label="Profile"
-          icon={<AccountCircleIcon className={getColor("/profile")} sx={{ width: 30, height: 30 }} />}
+          icon={<CircleUserIcon className={getColor("/profile")} size={25} />}
           isActive={tab === "/profile"}
           onClick={() => handleNavigation("/profile")}
         />
@@ -52,7 +51,7 @@ const SideNavigation: React.FC = () => {
       <div className="hidden md:block">
         <NavigationTab
           label="Logout"
-          icon={<LogoutIcon className="text-[#f5f5f5]" sx={{ width: 20, height: 20 }} />}
+          icon={<LogOutIcon className="text-[#f5f5f5]" size={25} />}
           onClick={handleLogout}
         />
       </div>

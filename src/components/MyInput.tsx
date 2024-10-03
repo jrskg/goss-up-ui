@@ -1,8 +1,7 @@
-import React, { useState } from 'react'
-import { Label } from './ui/label'
-import { Input } from './ui/input'
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import { EyeClosedIcon, EyeOpenIcon } from "@radix-ui/react-icons";
+import React, { useState } from 'react';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
 
 interface MyInputProps {
   label?: string
@@ -12,6 +11,7 @@ interface MyInputProps {
   disabled?: boolean
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void
   value: string
+  name?: string
 }
 const MyInput: React.FC<MyInputProps> = ({
   label = "",
@@ -21,6 +21,7 @@ const MyInput: React.FC<MyInputProps> = ({
   disabled = false,
   onChange,
   value,
+  name=""
 }) => {
   const [visible, setVisible] = useState<boolean>(false);
   return (
@@ -34,6 +35,7 @@ const MyInput: React.FC<MyInputProps> = ({
         id={label}
         placeholder={placeholder}
         className={`text-xl border-2 ${error ? 'border-red-500' : 'border-[#525252]'} py-5`}
+        name={name}
       />
       {error ? 
         <Label className='text-red-500' >{error}</Label> : 
@@ -41,11 +43,11 @@ const MyInput: React.FC<MyInputProps> = ({
 
       {type === "password" && 
       <div
-        className='absolute right-4 top-10 cursor-pointer'
+        className='absolute right-4 top-11 cursor-pointer'
       >
         {visible ? 
-          <Visibility onClick={() => setVisible(false)}/> : 
-          <VisibilityOff onClick={() => setVisible(true)}/>
+          <EyeOpenIcon onClick={() => setVisible(false)}/> : 
+          <EyeClosedIcon onClick={() => setVisible(true)}/>
         }
       </div>}
     </div>

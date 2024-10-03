@@ -3,13 +3,10 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 import { Toaster } from './components/ui/sonner.tsx'
-import DoneIcon from '@mui/icons-material/Done';
-import CloseIcon from '@mui/icons-material/Close';
-import InfoIcon from '@mui/icons-material/Info';
-import WarningIcon from '@mui/icons-material/Warning';
 import { Provider } from "react-redux"
 import { store } from './redux/store.ts'
 import { BrowserRouter as Router } from "react-router-dom"
+import { CheckIcon, XIcon, InfoIcon, TriangleAlertIcon} from 'lucide-react'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -18,10 +15,10 @@ createRoot(document.getElementById('root')!).render(
         <App />
         <Toaster
           icons={{
-            success: <DoneIcon sx={{ scale: 1 }} />,
-            error: <CloseIcon sx={{ scale: 1 }} />,
-            info: <InfoIcon sx={{ scale: 1 }} />,
-            warning: <WarningIcon sx={{ scale: 1 }} />
+            success: <CheckIcon />,
+            error: <XIcon />,
+            info: <InfoIcon />,
+            warning: <TriangleAlertIcon />
           }}
           toastOptions={{
             duration: 5000,

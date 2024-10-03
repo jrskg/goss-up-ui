@@ -6,7 +6,7 @@ interface ContainerProps {
 
 const MainLayout:React.FC<ContainerProps> = ({children}) => {
   return (
-    <div className='md:ml-[100px] md:mb-0'>
+    <div className='md:ml-[115px] md:mb-0 mb-[90px]'>
       {children}
     </div>
   )

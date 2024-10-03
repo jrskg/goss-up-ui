@@ -21,6 +21,8 @@ const OperationInfo = React.lazy(() => import('./pages/OperationInfo'));
 const Verification = React.lazy(() => import('./pages/Verification'));
 const InitialStepper = React.lazy(() => import('./pages/InitialStepper'));
 const ErrorPage = React.lazy(() => import('./pages/ErrorPage'));
+const ForgetPassword = React.lazy(() => import('./pages/ForgetPassword'));
+const ResetPassword = React.lazy(() => import('./pages/ResetPassword'));
 
 function App() {
   // useEffect(() => {
@@ -34,8 +36,7 @@ function App() {
 
   useEffect(() => {
     (async () => {
-      if(location.pathname.includes("/verify")) return;
-      console.log("Running app");
+      if(location.pathname.includes("/verify") || location.pathname.includes("/password/reset")) return;
       if (isAuthenticated) return;
       await loadUser();
     })()
@@ -47,6 +48,7 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login auhtLoading={loading} />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path='/forget-password' element={<Suspense fallback={<TopLoader />}><ForgetPassword /></Suspense>} />
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<Home />} />
           <Route path="/profile" element={<Suspense fallback={<TopLoader />}><Profile /></Suspense>} />
@@ -56,6 +58,7 @@ function App() {
         <Route element={<VerificationRoute />}>
           <Route path='/operation-info/:type' element={<Suspense fallback={<TopLoader />}><OperationInfo /></Suspense>} />
           <Route path='/verify/:veriticationToken' element={<Suspense fallback={<TopLoader />}><Verification /></Suspense>} />
+          <Route path='/password/reset/:resetToken' element={<Suspense fallback={<TopLoader />}><ResetPassword /></Suspense>} />
         </Route>
         <Route element={<InitialStepperRoute />}>
           <Route path='/initial-stepper' element={<Suspense fallback={<TopLoader />}><InitialStepper /></Suspense>} />
