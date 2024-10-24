@@ -11,9 +11,9 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import { useAuthActions } from './hooks/userHooks';
-// import {generateToken, messaging} from "./notifications/firebase";
-// import { useEffect } from 'react';
-// import {onMessage} from "firebase/messaging";
+import { onMessage } from 'firebase/messaging';
+import { messaging } from './notifications/firebase';
+
 const Profile = React.lazy(() => import('./pages/Profile'));
 const Notifications = React.lazy(() => import('./pages/Notifications'));
 const Friends = React.lazy(() => import('./pages/Friends'));
@@ -23,14 +23,15 @@ const InitialStepper = React.lazy(() => import('./pages/InitialStepper'));
 const ErrorPage = React.lazy(() => import('./pages/ErrorPage'));
 const ForgetPassword = React.lazy(() => import('./pages/ForgetPassword'));
 const ResetPassword = React.lazy(() => import('./pages/ResetPassword'));
+const SearchUser = React.lazy(() => import('./pages/SearchUser'));
+const UserProfile = React.lazy(() => import('./pages/UserProfile'));
 
 function App() {
-  // useEffect(() => {
-  //   generateToken();
-  //   onMessage(messaging, (payload) => {
-  //     console.log("Message received. ", payload);
-  //   })
-  // }, [])
+  useEffect(() => {
+    onMessage(messaging, (payload) => {
+      console.log("Message received. ", payload);
+    })
+  }, [])
   const { isAuthenticated } = useAppSelector(state => state.user);
   const {loadUser, loading} = useAuthActions();
 
@@ -54,6 +55,8 @@ function App() {
           <Route path="/profile" element={<Suspense fallback={<TopLoader />}><Profile /></Suspense>} />
           <Route path="/notifications" element={<Suspense fallback={<TopLoader />}><Notifications /></Suspense>} />
           <Route path="/friends" element={<Suspense fallback={<TopLoader />}><Friends /></Suspense>} />
+          <Route path="/search" element={<Suspense fallback={<TopLoader />}><SearchUser /></Suspense>} />
+          <Route path="/user/:userId" element={<Suspense fallback={<TopLoader />}><UserProfile /></Suspense>} />
         </Route>
         <Route element={<VerificationRoute />}>
           <Route path='/operation-info/:type' element={<Suspense fallback={<TopLoader />}><OperationInfo /></Suspense>} />

@@ -1,15 +1,21 @@
 import { RESET } from "@/utils/constants";
 import { Action, combineReducers, configureStore } from "@reduxjs/toolkit";
 import userReducer from "./slices/user";
+import searchedUsersReducer from "./slices/searchResult";
+import userDetailsReducer from "./slices/userDetails";
+import friendRequestsReducer from "./slices/friendRequests";
 
 const appReducer = combineReducers({
-  user:userReducer
+  user: userReducer,
+  searchedUsers: searchedUsersReducer,
+  userDetails:userDetailsReducer,
+  friendRequests: friendRequestsReducer
 });
 
-const rootReducer = (state:ReturnType<typeof appReducer> | undefined, action:Action) => {
-  if(action.type === RESET){
+const rootReducer = (state: ReturnType<typeof appReducer> | undefined, action: Action) => {
+  if (action.type === RESET) {
     return appReducer(undefined, action);
-  }else{
+  } else {
     return appReducer(state, action);
   }
 }

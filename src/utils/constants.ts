@@ -16,3 +16,5 @@ export const BIO_LISTS = [
   "Coffee lover ☕, let's chat over a virtual cup!",
   "Dreamer, thinker, and ready to chat."
 ];
+
+export const SPECIAL_VALUE_WHEN_USER_NULL = "special-value-when-user-is-null";

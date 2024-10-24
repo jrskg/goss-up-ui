@@ -8,6 +8,7 @@ import { generateFCMToken } from '@/notifications/firebase';
 import { validateEmail, validatePassword } from '@/utils/validation';
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 interface LoginProps {
   auhtLoading?: boolean
@@ -52,7 +53,7 @@ const Login: React.FC<LoginProps> = ({auhtLoading}) => {
       email,
       password
     }
-    if(Notification.permission === 'granted') {
+    try {
       setLoading(true);
       const fcmToken = await generateFCMToken();
       if(fcmToken) {
@@ -61,8 +62,9 @@ const Login: React.FC<LoginProps> = ({auhtLoading}) => {
           platform: "web"
         }
       }
-      setLoading(false);
-    }
+    } catch (error) {
+      toast.error("Unable to subscribe to notifications. See your browser settings for notifications");
+    }finally{setLoading(false);}
     await login(data);
   }
   return (

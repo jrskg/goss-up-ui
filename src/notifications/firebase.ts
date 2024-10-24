@@ -11,8 +11,17 @@ const firebaseConfig = {
 };
 
 const vapid = "BMkKJ5txCLWQSYJvi7Z3q-gsZey3EDB81a4p4iPhvQ7hVtFtYGbUAJrY3UOdymu6l-NiCNpP1GwruLqLaaLudeA";
-
 const app = initializeApp(firebaseConfig);
+
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/firebase-messaging-sw.js')
+  .then((registration) => {
+    console.log("Registration successful, scope is:", registration.scope);
+  })
+  .catch((err) => {
+    console.log("Service worker registration failed, error:", err);
+  });
+}
 export const messaging = getMessaging(app);
 
 export const generateFCMToken = async (): Promise<string | null> => {

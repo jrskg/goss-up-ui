@@ -73,20 +73,31 @@
 }
 
 ::-webkit-scrollbar {
-  width: 5px;
-  /* height: 12px; */
+  width: 0px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1; /* Scrollbar track (background) */
+  background: #f1f1f1;
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #ffe600; /* Scrollbar thumb (handle) */
-  border-radius: 6px; /* Rounded corners on the scrollbar */
-  border: 3px solid transparent; /* Add some padding around the scrollbar thumb */
+  background-color: transparent;
+  border-radius: 6px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background-color: #df9800; /* Color on hover */
+.scrollable-container {
+  -webkit-overflow-scrolling: touch;
 }
+
+@media (max-width: 768px) {
+  .scrollable-container {
+    overflow-y: scroll;
+    -ms-overflow-style: none;  
+    scrollbar-width: none;   
+  }
+
+  .scrollable-container::-webkit-scrollbar {
+    display: none;  
+  }
+}
+

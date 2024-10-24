@@ -20,10 +20,28 @@ export interface IUser {
   lastSeen: Date;
 }
 
+export interface SearchedUser {
+  name: string;
+  profilePic?: Image;
+  _id: string;
+}
+
+export interface SearchedUserResponseData {
+  users: SearchedUser[];
+  total: number;
+  hasMore: boolean;
+}
+
 export interface ResponseWithoutData {
   message: string;
   success: boolean;
 }
+
+export interface ResponseWithData<T> {
+  message: string;
+  success: boolean;
+  data: T;
+} 
 
 export interface RegisterResponse extends ResponseWithoutData {
   data: {
@@ -52,3 +70,35 @@ export interface ImageResponse extends ResponseWithoutData {
 }
 
 export interface LoginParams { email: string, password: string, pushOptions?: PushToken }
+
+export type FriendshipStatus = "accepted" | "pending" | "rejected";
+export interface UserDetails{
+  _id: string;
+  name:string;
+  bio: string;
+  profilePic?:Image;
+  status: UserStatus;
+  lastSeen: Date;
+  friendship: null | {
+    friendshipStatus: FriendshipStatus;
+    isYouSender: boolean;
+    friendshipId: string;
+  }
+}
+
+export interface FriendRequestSender{
+  _id: string;
+  name: string;
+  profilePic: Image;
+}
+export interface FriendRequest{
+  _id: string;
+  status: FriendshipStatus;
+  sender: FriendRequestSender;
+  createdAt: string;
+}
+export interface FriendRequestResponseData {
+  hasMore: boolean;
+  totalRequests: number;
+  friendRequests: FriendRequest[];
+}

@@ -1,6 +1,6 @@
 import React from 'react'
+import Spinner from './Spinner'
 import { Button } from './ui/button'
-import Loader from './Loader'
 
 interface BtnProps {
   title: string
@@ -9,6 +9,7 @@ interface BtnProps {
   className?: string
   loading?: boolean
   btnClassName?: string
+  icon?: React.ReactNode
 }
 const MyButton: React.FC<BtnProps> = ({
   title,
@@ -16,18 +17,16 @@ const MyButton: React.FC<BtnProps> = ({
   disabled,
   className,
   loading,
-  btnClassName
+  btnClassName,
+  icon
 }) => {
   return (
     <div className={`relative w-full ${className}`}>
-    <Button
-      className={`bg-blue-500 w-full hover:bg-blue-600 text-xl transition duration-500 dark:blue-300 ${btnClassName}`}
-      size={"lg"}
-      onClick={onClick}
-      disabled={disabled || loading}
-
-    >{loading ? "" : title}</Button>
-    {loading && <Loader className='absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]' />}
+      <Button
+        className={`bg-blue-500 w-full hover:bg-blue-600 text-sm md:text-lg transition duration-500 dark:bg-dark-3 text-white dark:hover:bg-dark-4 ${btnClassName}`}
+        onClick={onClick}
+        disabled={disabled || loading}
+      >{loading ? <Spinner/> : icon}{title}</Button>
     </div>
   )
 }
