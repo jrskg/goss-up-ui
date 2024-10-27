@@ -1,13 +1,14 @@
-import FriendsPageLayout from '@/layouts/FriendsPageLayout'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
-import FriendRequestCard, { IRespondParams } from './FriendRequestCard'
-import type { FriendRequestResponseData, FriendshipStatus, ResponseWithData } from '@/interface/interface'
-import { useNavigate } from 'react-router-dom'
+import { useFriendshipActions } from '@/hooks/friendshipHooks'
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks'
+import type { FriendRequestResponseData, ResponseWithData } from '@/interface/interface'
+import FriendsPageLayout from '@/layouts/FriendsPageLayout'
+import { appendToFriendRequests, removeUpdatedFriendRequest, setFriendRequests, updateFriendRequests } from '@/redux/slices/friendRequests'
 import instance from '@/utils/axiosInstance'
-import { appendToFriendRequests, setFriendRequests, updateFriendRequests } from '@/redux/slices/friendRequests'
 import { AxiosError } from 'axios'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
+import FriendRequestCard, { IRespondParams } from './FriendRequestCard'
 import Loader from './Loader'
 
 const FriendRequestList: React.FC = () => {
@@ -17,7 +18,9 @@ const FriendRequestList: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [moreLoading, setMoreLoading] = useState(false);
   const navigate = useNavigate();
+  const {respondToFriendRequest} = useFriendshipActions();
 
+  const updates = useRef<boolean[]>([false, false]);
   const observer = useRef<IntersectionObserver | null>(null);
   const lastElementRef = useCallback((node: HTMLDivElement) => {
     if (loading || moreLoading) return;
@@ -53,18 +56,25 @@ const FriendRequestList: React.FC = () => {
   const handleRespond = useCallback(
     async (params: IRespondParams) => {
       const { friendshipId, status, setLoading, isLatest } = params;
-      console.log(friendshipId);
-      
+      setLoading(true);
+      await respondToFriendRequest(friendshipId, status, (alreadyFriends) => {
+        if(alreadyFriends) dispatch(updateFriendRequests({friendshipId, status:"accepted", isLatest}));
+        else dispatch(updateFriendRequests({friendshipId, status, isLatest}));
+      });
+      setLoading(false);
+      updates.current[isLatest ? 0 : 1] = true;
     },
     [],
   )
-
   useEffect(() => {
     (async () => {
       if (friendRequests.length === 0) {
         await getFriendRequests(1);
       }
     })();
+    return () => {
+      dispatch(removeUpdatedFriendRequest(updates.current));
+    }
   }, []);
 
   if (loading) {
@@ -75,7 +85,7 @@ const FriendRequestList: React.FC = () => {
     )
   }
   return (
-    <FriendsPageLayout heading='Friend Requests'>
+    <FriendsPageLayout>
       {latestRequests.length > 0 && <div className="w-full mb-2">
         <h2 className='text-xl py-2'>Latest Friend Requests</h2>
         <div className='w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-1 sm:gap-5 justify-center content-center'>
@@ -85,10 +95,10 @@ const FriendRequestList: React.FC = () => {
                 key={req._id}
                 senderId={req.sender._id}
                 senderName={req.sender.name}
-                profilePic={req.sender.profilePic}
+                profilePic={req.sender?.profilePic}
                 friendshipId={req._id}
                 createdAt={req.createdAt}
-                status={req.status as FriendshipStatus}
+                status={req.status}
                 navigate={navigate}
                 handleButtonsClick={handleRespond}
               />
@@ -109,7 +119,7 @@ const FriendRequestList: React.FC = () => {
                     profilePic={req.sender.profilePic}
                     friendshipId={req._id}
                     createdAt={req.createdAt}
-                    status={req.status as FriendshipStatus}
+                    status={req.status}
                     navigate={navigate}
                     handleButtonsClick={handleRespond}
                   />
@@ -119,10 +129,10 @@ const FriendRequestList: React.FC = () => {
                   key={req._id}
                   senderId={req.sender._id}
                   senderName={req.sender.name}
-                  profilePic={req.sender.profilePic}
+                  profilePic={req.sender?.profilePic}
                   friendshipId={req._id}
                   createdAt={req.createdAt}
-                  status={req.status as FriendshipStatus}
+                  status={req.status}
                   navigate={navigate}
                   handleButtonsClick={handleRespond}
                 />

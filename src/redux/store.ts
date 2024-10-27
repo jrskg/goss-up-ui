@@ -4,12 +4,16 @@ import userReducer from "./slices/user";
 import searchedUsersReducer from "./slices/searchResult";
 import userDetailsReducer from "./slices/userDetails";
 import friendRequestsReducer from "./slices/friendRequests";
+import requestsSentReducer from "./slices/requestSent";
+import friendsReducer from "./slices/friends";
 
 const appReducer = combineReducers({
   user: userReducer,
   searchedUsers: searchedUsersReducer,
   userDetails:userDetailsReducer,
-  friendRequests: friendRequestsReducer
+  friendRequests: friendRequestsReducer,
+  requestsSent: requestsSentReducer,
+  friends: friendsReducer
 });
 
 const rootReducer = (state: ReturnType<typeof appReducer> | undefined, action: Action) => {

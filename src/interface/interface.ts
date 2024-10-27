@@ -85,20 +85,48 @@ export interface UserDetails{
     friendshipId: string;
   }
 }
-
-export interface FriendRequestSender{
+export interface IUserShort {
   _id: string;
   name: string;
-  profilePic: Image;
+  profilePic?: Image;
 }
+
+//interfaces for friend requests page list 
 export interface FriendRequest{
   _id: string;
   status: FriendshipStatus;
-  sender: FriendRequestSender;
+  sender: IUserShort;
   createdAt: string;
 }
 export interface FriendRequestResponseData {
   hasMore: boolean;
   totalRequests: number;
   friendRequests: FriendRequest[];
+}
+
+//interfaces for friend requests sent page list
+export type FriendshipStatusExtended = "accepted" | "pending" | "rejected" | "canceled";
+export interface FriendRequestSent{
+  _id: string;
+  status: FriendshipStatusExtended;
+  receiver: IUserShort;
+  createdAt: string;
+}
+// export interface FriendRequestSentResponseData {
+//   hasMore: boolean;
+//   totalRequestsSent: number;
+//   friendRequestsSent: FriendRequestSent[];
+// }
+
+// interface for friends
+export interface Friend{
+  _id: string;
+  status: FriendshipStatus;
+  friend: IUserShort;
+  updatedAt: string;
+}
+export interface FriendsResponseData {
+  hasMore: boolean;
+  totalFriends: number;
+  friends: Friend[];
 }

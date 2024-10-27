@@ -4,6 +4,7 @@ import MyButton from './MyButton'
 import defaultAvatar from "../assets/defaultAvatar.jpg";
 import { DotIcon, UserRoundCheckIcon, UserRoundXIcon } from 'lucide-react';
 import { NavigateFunction } from 'react-router-dom';
+import { getDateStr } from '@/utils/utility';
 
 export interface IRespondParams {
   friendshipId: string
@@ -36,21 +37,7 @@ const FriendRequestCard: React.FC<FriendRequestCardProps> = ({
 }) => {
   const [acceptLoading, setAcceptLoading] = useState(false);
   const [declineLoading, setDeclineLoading] = useState(false);
-  console.log("rendering");
-  
-  const getDateStr = () => {
-    const date = new Date(createdAt)
-    const currDate = new Date(Date.now())
-    const diffDays = Math.floor((currDate.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-    if (diffDays === 0) {
-      return `Today at ${date.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric' })}`
-    } else if (diffDays === 1) {
-      return "Yesterday"
-    } else if (diffDays <= 6) {
-      return `${diffDays} days ago`
-    }
-    return Math.floor(diffDays / 7) + " weeks ago";
-  }
+  // console.log("rendering");
   return (
     //here width is full because the parent conatiner will adjust the width according to the screen (grid)
     <div className='bg-slate-300 dark:bg-dark-2 w-full rounded-sm space-y-2 sm:space-y-1 sm:hover:translate-y-[-5px] hover:shadow-lg cursor-pointer transition-all'>
@@ -70,7 +57,7 @@ const FriendRequestCard: React.FC<FriendRequestCardProps> = ({
         <p className='text-xl font-bold text-center'>{senderName}</p>
         <div className='flex items-center'>
           <DotIcon className='w-6 h-6 sm:hidden' />
-          <p className='text-sm text-center pt-1'>{getDateStr()}</p>
+          <p className='text-sm text-center pt-1'>{getDateStr(createdAt)}</p>
         </div>
       </div>
       <div className='space-x-3 sm:space-x-0 sm:space-y-2 px-2 sm:px-1 pb-2 flex sm:flex-col justify-center'>

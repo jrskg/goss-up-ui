@@ -46,6 +46,18 @@ export const friendRequestsSlice = createSlice({
         });
       }
     },
+    removeUpdatedFriendRequest: (state, action:PayloadAction<boolean[]>) => {
+      const [latestUpdated, olderUpdated] = action.payload;
+      if(latestUpdated){
+        console.log("latest updated");
+        
+        state.latestRequests = state.latestRequests.filter(req => req.status === "pending");
+      }
+      if(olderUpdated){
+        console.log("older updated");
+        state.friendRequests = state.friendRequests.filter(req => req.status === "pending");
+      }
+    },
     setLatestRequests: (state, action:PayloadAction<FriendRequest>) => {
       state.latestRequests = [action.payload, ...state.latestRequests];
     }
@@ -56,6 +68,7 @@ export const {
   appendToFriendRequests,
   setFriendRequests,
   setLatestRequests,
-  updateFriendRequests
+  updateFriendRequests,
+  removeUpdatedFriendRequest
 } = friendRequestsSlice.actions;
 export default friendRequestsSlice.reducer;

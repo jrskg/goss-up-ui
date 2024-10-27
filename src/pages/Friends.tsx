@@ -1,4 +1,6 @@
 import FriendRequestList from "@/components/FriendRequestList";
+import FriendRequestSent from "@/components/FriendRequestSent";
+import FriendsList from "@/components/FriendsList";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import MainLayout from "@/layouts/MainLayout";
@@ -32,10 +34,10 @@ const Friends = () => {
             <FriendRequestList/>
           </TabsContent>
           <TabsContent value="friend-list" className="w-[100%] ">
-            <h1>Your Friend List</h1>
+            <FriendsList/>
           </TabsContent>
           <TabsContent value="friend-requests-sent" className="w-[100%] ">
-            <h1>Your Friend Requests Sent</h1>
+            <FriendRequestSent/>
           </TabsContent>
         </Tabs>
       </div>

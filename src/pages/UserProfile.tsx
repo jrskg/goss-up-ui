@@ -47,10 +47,10 @@ const UserProfile: React.FC = () => {
     else {
       setRejectLoading(true);
       await respondToFriendRequest(userDetails.friendship.friendshipId, "rejected",(alreadyFriends) => {
-        setRejectLoading(false);
         if(alreadyFriends) dispatch(updateUserDetails({userId, actionToPerform: "request_accepted"}));
         else dispatch(updateUserDetails({userId, actionToPerform: "request_rejected"}));
       }, true);
+      setRejectLoading(false);
     }
   }
   const handleUnfriend = () => {
