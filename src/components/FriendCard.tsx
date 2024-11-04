@@ -20,7 +20,7 @@ const FriendCard: React.FC<FriendCardProps> = ({
   profilePic,
   updatedAt
 }) => {
-  // console.log("rendering friend card");
+  console.log("rendering friend card");
   return (
     //here width is full because the parent conatiner will adjust the width according to the screen (grid)
     <div className='bg-slate-300 dark:bg-dark-2 w-full rounded-sm space-y-2 sm:space-y-1 sm:hover:translate-y-[-5px] hover:shadow-lg cursor-pointer transition-all'>

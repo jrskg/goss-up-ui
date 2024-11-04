@@ -59,12 +59,12 @@ export default {
         warning: "#ffc107",
         danger: "#dc3545",
         primary: {
-          1: "#ffeb3b",
-          2: "#ffed58",
-          3: "#ffef70",
-          4: "#fff186",
-          5: "#fff49b",
-          6: "#fff6af",
+          1: "#09a4ff",
+          2: "#21aafe",
+          3: "#3bb5fe",
+          4: "#64c6ff",
+          5: "#9adbff",
+          6: "#cbeeff",
         },
         dark: {
           1: "#0a0a09",

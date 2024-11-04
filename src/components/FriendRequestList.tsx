@@ -18,7 +18,7 @@ const FriendRequestList: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [moreLoading, setMoreLoading] = useState(false);
   const navigate = useNavigate();
-  const {respondToFriendRequest} = useFriendshipActions();
+  const { respondToFriendRequest } = useFriendshipActions();
 
   const updates = useRef<boolean[]>([false, false]);
   const observer = useRef<IntersectionObserver | null>(null);
@@ -53,13 +53,18 @@ const FriendRequestList: React.FC = () => {
     }
   }
 
+  const onRefresh = async () => {
+    setPage(1);
+    await getFriendRequests(1);
+  }
+
   const handleRespond = useCallback(
     async (params: IRespondParams) => {
       const { friendshipId, status, setLoading, isLatest } = params;
       setLoading(true);
       await respondToFriendRequest(friendshipId, status, (alreadyFriends) => {
-        if(alreadyFriends) dispatch(updateFriendRequests({friendshipId, status:"accepted", isLatest}));
-        else dispatch(updateFriendRequests({friendshipId, status, isLatest}));
+        if (alreadyFriends) dispatch(updateFriendRequests({ friendshipId, status: "accepted", isLatest }));
+        else dispatch(updateFriendRequests({ friendshipId, status, isLatest }));
       });
       setLoading(false);
       updates.current[isLatest ? 0 : 1] = true;
@@ -77,71 +82,78 @@ const FriendRequestList: React.FC = () => {
     }
   }, []);
 
-  if (loading) {
-    return (
-      <div className='w-full h-[40vh] flex justify-center items-center'>
-        <Loader />
-      </div>
-    )
-  }
   return (
-    <FriendsPageLayout>
-      {latestRequests.length > 0 && <div className="w-full mb-2">
-        <h2 className='text-xl py-2'>Latest Friend Requests</h2>
-        <div className='w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-1 sm:gap-5 justify-center content-center'>
-          {
-            latestRequests.map(req => (
-              <FriendRequestCard
-                key={req._id}
-                senderId={req.sender._id}
-                senderName={req.sender.name}
-                profilePic={req.sender?.profilePic}
-                friendshipId={req._id}
-                createdAt={req.createdAt}
-                status={req.status}
-                navigate={navigate}
-                handleButtonsClick={handleRespond}
-              />
-            ))
-          }
-        </div>
-      </div>}
-      <div className="w-full">
-        <h2 className='text-xl py-2'>Older Friend Requests</h2>
-        <div className='w-full grid grid-cols-1 gap-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 sm:gap-5 justify-center content-center'>
-          {
-            friendRequests.map((req, index) => (
-              index === friendRequests.length - 1 ? (
-                <div ref={lastElementRef} key={req._id}>
-                  <FriendRequestCard
-                    senderId={req.sender._id}
-                    senderName={req.sender.name}
-                    profilePic={req.sender.profilePic}
-                    friendshipId={req._id}
-                    createdAt={req.createdAt}
-                    status={req.status}
-                    navigate={navigate}
-                    handleButtonsClick={handleRespond}
-                  />
-                </div>
-              ) : (
-                <FriendRequestCard
-                  key={req._id}
-                  senderId={req.sender._id}
-                  senderName={req.sender.name}
-                  profilePic={req.sender?.profilePic}
-                  friendshipId={req._id}
-                  createdAt={req.createdAt}
-                  status={req.status}
-                  navigate={navigate}
-                  handleButtonsClick={handleRespond}
-                />
-              )
-            ))
-          }
-        </div>
-        {moreLoading && <Loader className='my-10' label='Loading more...' />}
-      </div>
+    <FriendsPageLayout heading='Friend Requests' refreshHandler={onRefresh} refreshLoading={loading}>
+      {
+        loading ? (
+          <div className='w-full h-[40vh] flex justify-center items-center'>
+            <Loader />
+          </div>
+        ) : (
+          <>
+            {latestRequests.length > 0 && <div className="w-full mb-2">
+              <h2 className='text-xl py-2'>Latest Friend Requests</h2>
+              <div className='w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-1 sm:gap-5 justify-center content-center'>
+                {
+                  latestRequests.map(req => (
+                    <FriendRequestCard
+                      key={req._id}
+                      senderId={req.sender._id}
+                      senderName={req.sender.name}
+                      profilePic={req.sender?.profilePic}
+                      friendshipId={req._id}
+                      createdAt={req.createdAt}
+                      status={req.status}
+                      navigate={navigate}
+                      handleButtonsClick={handleRespond}
+                    />
+                  ))
+                }
+              </div>
+            </div>}
+            <div className="w-full">
+              <h2 className='text-xl py-2'>Older Friend Requests</h2>
+              <div className='w-full grid grid-cols-1 gap-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 sm:gap-5 justify-center content-center'>
+                {
+                  friendRequests.length > 0 ? friendRequests.map((req, index) => (
+                    index === friendRequests.length - 1 ? (
+                      <div ref={lastElementRef} key={req._id}>
+                        <FriendRequestCard
+                          senderId={req.sender._id}
+                          senderName={req.sender.name}
+                          profilePic={req.sender.profilePic}
+                          friendshipId={req._id}
+                          createdAt={req.createdAt}
+                          status={req.status}
+                          navigate={navigate}
+                          handleButtonsClick={handleRespond}
+                        />
+                      </div>
+                    ) : (
+                      <FriendRequestCard
+                        key={req._id}
+                        senderId={req.sender._id}
+                        senderName={req.sender.name}
+                        profilePic={req.sender?.profilePic}
+                        friendshipId={req._id}
+                        createdAt={req.createdAt}
+                        status={req.status}
+                        navigate={navigate}
+                        handleButtonsClick={handleRespond}
+                      />
+                    )
+                  )) : (
+                    <div className='h-[40vh] col-span-full flex justify-center items-center'>
+                      <p className='text-3xl'>No friend requests</p>
+                    </div>
+                  )
+                }
+              </div>
+              {moreLoading && <Loader className='my-10' label='Loading more...' />}
+            </div>
+          </>
+        )
+      }
     </FriendsPageLayout>
   )
 }

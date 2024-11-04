@@ -7,6 +7,7 @@ export type Theme = "light" | "dark";
 export type UserStatus = "online" | "offline";
 
 export interface IUser {
+  _id: string;
   name: string;
   email: string;
   bio: string;
@@ -129,4 +130,26 @@ export interface FriendsResponseData {
   hasMore: boolean;
   totalFriends: number;
   friends: Friend[];
+}
+
+//interface for message card
+export type MessageType = "text" | "file";
+export type FileType = "image" | "video" | "audio" | "other";
+export type DeliveryStatus = "sent" | "delivered" | "seen";
+export type ChatType = "one-to-one" | "group";
+export interface IAttachment{
+  fileUrl: string;
+  fileType: FileType;
+  originalFileName: string;
+  size: number;
+}
+export interface IMessageCard{
+  _id: string;
+  chatId: string;
+  senderId: string;
+  content?: string;
+  messageType: MessageType;
+  deliveryStatus: DeliveryStatus;
+  attachments: IAttachment[];
+  createdAt: string;
 }
