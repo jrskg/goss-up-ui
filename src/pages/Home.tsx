@@ -20,7 +20,7 @@ const Home = () => {
   }
   return (
     <MainLayout>
-      <div className="absolute top-24 left-1 flex flex-col gap-5 bg-primary-1 dark:bg-dark-2 p-4 z-50 shadow-2xl rounded-md">
+      <div className="absolute top-24 left-1 flex flex-col gap-5 bg-primary-1 dark:bg-dark-2 p-4 z-[60] shadow-2xl rounded-md">
         <button onClick={() => setShow(!show)}>Toggle Details</button>
         <button onClick={() => setSelectedChat(!selectedChat)}>Toggle Chat</button>
         <button onClick={toggleMode}>Toggle Theme</button>

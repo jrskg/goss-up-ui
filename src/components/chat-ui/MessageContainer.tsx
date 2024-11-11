@@ -1,7 +1,6 @@
-import React from 'react'
-import MessageCard from './MessageCard';
 import { DeliveryStatus, IAttachment, MessageType } from '@/interface/interface';
-import { useAppSelector } from '@/hooks/hooks';
+import React from 'react';
+import MessageCard from './MessageCard';
 
 const messages = [
   {
@@ -273,7 +272,6 @@ const MessageContainer: React.FC = () => {
         messages.map((m, i) => (
           <MessageCard
             key={m._id}
-            _id={m._id}
             attachments={m.attachments as IAttachment[]}
             chatType="group"
             content={m.content}

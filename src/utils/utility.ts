@@ -15,8 +15,9 @@
 
 // export { checkConnection }
 
-import { ChatType } from '@/interface/interface';
+import type{ ChatType, IChat, ILastMessage } from '@/interface/interface';
 import { format, isAfter, isSameDay, isSameYear, subDays } from 'date-fns';
+import defaultAvatar from '../assets/defaultAvatar.jpg';
 
 const toggleDarkMode = (setDarkMode: boolean) => {
   const list = document.documentElement.classList;
@@ -59,7 +60,7 @@ const getMessageTimestamp = (date: Date) => {
   if (isSameYear(date, now)) {
     return format(date, 'd MMM, p'); // "11 Jun, 5:00 PM"
   }
-  return format(date, 'd MMM yyyy, p'); // "11 Jun 2023, 5:00 PM"
+  return format(date, 'd MMM yyyy'); // "11 Jun 2023, 5:00 PM"
 };
 
 const getMainConatainerStyle = (sId: string, lguId: string): string => {
@@ -107,6 +108,18 @@ const getDateStyle = (sId: string, lguId: string, chType: ChatType): string => {
   return "";
 }
 
+const getChatProfile = (ch: IChat, lgnUId: string): string => {
+  if (ch.chatType === "group") return ch.groupIcon ? ch.groupIcon.avatar : defaultAvatar;
+  let avatar = ch.participants[0]._id === lgnUId ? ch.participants[1].profilePic?.avatar : ch.participants[0].profilePic?.avatar;
+
+  return avatar ? avatar : defaultAvatar;
+}
+const getLastMessageText = (lastMessage?: ILastMessage): string => {
+  if (!lastMessage) return "";
+  if (lastMessage.messageType === "text") return lastMessage.content;
+  return "Sent an attachment";
+}
+
 export {
   getDateStr,
   getMessageTimestamp, toggleDarkMode,
@@ -114,5 +127,7 @@ export {
   getAvatarStyle,
   getMessageBoxStyle,
   getNameStyle,
-  getDateStyle
+  getDateStyle,
+  getChatProfile,
+  getLastMessageText
 };

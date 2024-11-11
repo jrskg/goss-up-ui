@@ -5,7 +5,6 @@ import { getAvatarStyle, getDateStyle, getMainConatainerStyle, getMessageBoxStyl
 import { CheckCheckIcon, CheckIcon, DownloadIcon } from 'lucide-react';
 
 interface MessageCardProps {
-  _id: string;
   senderId: string;
   senderName?: string;
   senderAvatar?: string;
@@ -20,7 +19,6 @@ interface MessageCardProps {
 }
 
 const MessageCard: React.FC<MessageCardProps> = ({
-  _id,
   loggedInUserId,
   senderId,
   senderAvatar,
