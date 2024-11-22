@@ -1,25 +1,31 @@
-import React from 'react'
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
+import { IChat } from '@/interface/chatInterface'
 import { cn } from '@/lib/utils'
+import React, { memo } from 'react'
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
 
 interface ChatCardProps {
-  _id: string
   avatar: string
   chatName: string
   lastMessage?: string
   lastMessageTime?: string
-  selectedId?: string
+  chat: IChat
+  onChatClick: (chat: IChat) => void
+  isChatSelected?: boolean
 }
 const ChatCard: React.FC<ChatCardProps> = ({
-  _id,
   avatar,
   chatName,
   lastMessage,
   lastMessageTime,
-  selectedId
+  chat,
+  onChatClick,
+  isChatSelected = false
 }) => {
+  console.log("CARD rendering... "+ Math.random(), isChatSelected);
   return (
-    <div className={cn("flex items-center justify-between px-2 py-3 hover:bg-primary-5 dark:hover:bg-dark-3 cursor-pointer", selectedId === _id && "bg-primary-2 dark:bg-dark-4")}>
+    <div className={cn("flex items-center justify-between px-2 py-3 hover:bg-primary-5 dark:hover:bg-dark-3 cursor-pointer", isChatSelected && "bg-primary-2 dark:bg-dark-4")}
+      onClick={() => onChatClick(chat)}
+    >
       <div className='flex items-center gap-2'>
         <Avatar className='w-12 h-12'>
           <AvatarImage src={avatar} alt="user" />
@@ -36,4 +42,4 @@ const ChatCard: React.FC<ChatCardProps> = ({
     </div>
   )
 }
-export default ChatCard
+export default memo(ChatCard);

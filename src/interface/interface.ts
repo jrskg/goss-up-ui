@@ -154,31 +154,7 @@ export interface IMessageCard{
   createdAt: string;
 }
 
-// interface for chat card
 export interface ILastMessage{
   messageType: MessageType;
   content: string;
 }
-interface BaseChat {
-  _id: string;
-  chatType: ChatType;
-  participants: IUserShort[];
-  admin: string[];
-  lastMessageId?: ILastMessage;
-  createdAt: string;
-  updatedAt: string;
-}
-
-// Conditional type to make `groupName` required for group chats
-interface GroupChat extends BaseChat {
-  chatType: "group";
-  groupName: string;
-  groupIcon?: Image
-}
-
-interface OneToOneChat extends BaseChat {
-  chatType: "one-to-one";
-  groupName?: never;
-}
-
-export type IChat = GroupChat | OneToOneChat;

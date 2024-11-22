@@ -1,5 +1,5 @@
 import { DeliveryStatus, IAttachment, MessageType } from '@/interface/interface';
-import React from 'react';
+import React, { memo } from 'react';
 import MessageCard from './MessageCard';
 
 const messages = [
@@ -263,9 +263,9 @@ const messages = [
     createdAt: "1698678840000",
   },
 ];
-
-
 const MessageContainer: React.FC = () => {
+  console.log("MessageContainer rendering... "+ Math.random());
+  
   return (
     <div className='w-full p-2'>
       {
@@ -290,4 +290,4 @@ const MessageContainer: React.FC = () => {
   )
 }
 
-export default MessageContainer
+export default memo(MessageContainer)

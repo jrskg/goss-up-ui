@@ -1,39 +1,52 @@
+import { useGetParticipantsInfo } from '@/hooks/chatHooks'
+import { useAppDispatch, useAppSelector } from '@/hooks/hooks'
+import { cn } from '@/lib/utils'
+import { setIsDetailsOn, setSelectedChat } from '@/redux/slices/selectedChat'
 import { AvatarImage } from '@radix-ui/react-avatar'
 import { MessageCircleMoreIcon, PaperclipIcon, SendHorizonalIcon, XIcon } from 'lucide-react'
-import React from 'react'
-import defaultAvatar from "../../assets/defaultAvatar.jpg"
+import React, { memo } from 'react'
 import { Avatar } from '../ui/avatar'
 import { Textarea } from '../ui/textarea'
 import MessageContainer from './MessageContainer'
+import { IChat } from '@/interface/chatInterface'
 
 interface ChatBoxProps {
-  selectedChat: boolean
-  setSelectedChat: React.Dispatch<React.SetStateAction<boolean>>
+  className?:string;
+  selectedChat:IChat | null;
+  userId:string;
 }
-
 const ChatBox: React.FC<ChatBoxProps> = ({
+  className,
   selectedChat,
-  setSelectedChat
+  userId
 }) => {
+  console.log("CHAT BOX rendering... chatbox"+ Math.random());
+  const dispatch = useAppDispatch();
+  const {participants} = useAppSelector(state => state.chats);
+  const {getChatAvatar, getChatName} = useGetParticipantsInfo(participants, userId);
   const handleCloseChat = () => {
-    setSelectedChat(false)
+    dispatch(setSelectedChat(null));
+  }
+  const handleDetailsClick = () => {
+    dispatch(setIsDetailsOn(true));
   }
   return (
-    <div className='bg-primary-5 dark:bg-dark-2 w-full h-full md:rounded-tr-md md:rounded-br-md md:border-l md:dark:border-primary-1 relative'>
+    <div className={cn("transition-all duration-300 bg-primary-5 dark:bg-dark-2 h-full md:rounded-tr-md md:rounded-br-md md:border-l md:dark:border-primary-1 relative", className)}>
       {
         selectedChat ? <>
-          <div className='w-full bg-primary-1 dark:bg-dark-3 px-5 py-2 md:rounded-tr-md flex items-center gap-2 h-[65px] relative'>
+          <div onClick={handleDetailsClick} className='w-full bg-primary-1 dark:bg-dark-3 px-5 py-2 md:rounded-tr-md flex items-center gap-2 h-[65px] relative cursor-pointer'>
             <Avatar className='w-12 h-12'>
-              <AvatarImage src={defaultAvatar} />
+              <AvatarImage src={getChatAvatar(selectedChat)} />
             </Avatar>
             <div>
-              <p className='text-xl font-bold leading-none'>User's Name</p>
-              <p className='text-sm'>Status</p>
+              <p className='text-xl font-bold leading-none'>{getChatName(selectedChat)}</p>
+              {/* <p className='text-sm'>Status</p> */}
             </div>
             <XIcon onClick={handleCloseChat} className='absolute right-3 w-6 h-6 cursor-pointer md:hidden' />
           </div>
           <div className='absolute top-[65px] bottom-[85px] w-full overflow-auto'>
             <MessageContainer/>
+            {/* <MessageContainerSkeleton/> */}
           </div>
           <div className='h-[85px] absolute bottom-0 left-0 bg-primary-1 dark:bg-dark-3 w-full rounded-br-md flex items-center px-2 justify-evenly'>
             <PaperclipIcon className='md:w-8 md:h-8 w-6 h-6 cursor-pointer' />
@@ -54,4 +67,4 @@ const ChatBox: React.FC<ChatBoxProps> = ({
   )
 }
 
-export default ChatBox
+export default memo(ChatBox)

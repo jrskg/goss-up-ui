@@ -1,5 +1,5 @@
 import type { ChatType, DeliveryStatus, IAttachment, MessageType } from '@/interface/interface';
-import React from 'react';
+import React, { memo } from 'react';
 import { AvatarImage, Avatar, AvatarFallback } from '../ui/avatar';
 import { getAvatarStyle, getDateStyle, getMainConatainerStyle, getMessageBoxStyle, getMessageTimestamp, getNameStyle } from '@/utils/utility';
 import { CheckCheckIcon, CheckIcon, DownloadIcon } from 'lucide-react';
@@ -17,7 +17,6 @@ interface MessageCardProps {
   createdAt: string;
   chatType: ChatType
 }
-
 const MessageCard: React.FC<MessageCardProps> = ({
   loggedInUserId,
   senderId,
@@ -32,6 +31,8 @@ const MessageCard: React.FC<MessageCardProps> = ({
   chatType
 }) => {
   const renderAttachment = (attachment: IAttachment) => {
+    console.log("MessageCard rendering... "+ Math.random());
+    
     const downloadButton = (
       <a target='_blank' href={attachment.fileUrl} download={"newfilename"} className="p-2">
         <DownloadIcon className='w-6 h-6 dark:hover:text-primary-1 hover:text-[#d3d3d3]' />
@@ -59,7 +60,7 @@ const MessageCard: React.FC<MessageCardProps> = ({
       case 'audio':
         return (
           <div className="flex flex-col items-start gap-2">
-            <audio controls className="w-full sm:min-w-[300px] md:min-w-[200px] lg:min-w-[350px]">
+            <audio controls className="w-full sm:w-[300px] md:w-[180px] xl:w-[280px] 2xl:w-[350px]">
               <source src={attachment.fileUrl} type="audio/mpeg" />
               Your browser does not support the audio element.
             </audio>
@@ -123,4 +124,4 @@ const MessageCard: React.FC<MessageCardProps> = ({
   )
 }
 
-export default MessageCard
+export default memo(MessageCard)

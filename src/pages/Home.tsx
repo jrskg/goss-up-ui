@@ -1,50 +1,92 @@
 import ChatBox from "@/components/chat-ui/ChatBox";
 import ChatDetails from "@/components/chat-ui/ChatDetails";
 import ChatList from "@/components/chat-ui/ChatList";
+import { useAppSelector } from "@/hooks/hooks";
 import MainLayout from "@/layouts/MainLayout";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const Home = () => {
-  const [show, setShow] = useState(false);
-  const [selectedChat, setSelectedChat] = useState(false);
-  const toggleMode = () => {
-    const list = document.documentElement.classList;
-    if (list.contains('dark')) {
-      list.remove('dark')
-      list.add('light')
-    }
-    else {
-      list.remove('light')
-      list.add('dark')
-    }
-  }
+  const { isDetailsOn, selectedChat } = useAppSelector((state) => state.selectedChat);
+  const { user } = useAppSelector((state) => state.user);
+  const [screenSize, setScreenSize] = useState<string>("large");
+
+  useEffect(() => {
+    const updateScreenSize = () => {
+      if (window.innerWidth < 768) setScreenSize("small");
+      else if (window.innerWidth < 1280) setScreenSize("medium");
+      else setScreenSize("large");
+    };
+
+    updateScreenSize();
+    window.addEventListener("resize", updateScreenSize);
+
+    return () => window.removeEventListener("resize", updateScreenSize);
+  }, []);
+
+  console.log("Home rendering...", Math.random());
+
   return (
     <MainLayout>
-      <div className="absolute top-24 left-1 flex flex-col gap-5 bg-primary-1 dark:bg-dark-2 p-4 z-[60] shadow-2xl rounded-md">
-        <button onClick={() => setShow(!show)}>Toggle Details</button>
-        <button onClick={() => setSelectedChat(!selectedChat)}>Toggle Chat</button>
-        <button onClick={toggleMode}>Toggle Theme</button>
-      </div>
-      <div className="w-[100%] md:mt-6 h-[calc(100vh-90px)] md:h-[94vh] flex justify-center">
-        {/* for small devices */}
-        <div className="block md:hidden w-full h-full">
-          {
-            !selectedChat ? <ChatList /> : <>
-              {show ? <ChatDetails /> : <ChatBox selectedChat={selectedChat} setSelectedChat={setSelectedChat}/>}
-            </>
-          }
-        </div>
-        {/* for large devices */}
-        <div className="hidden md:grid w-[95%] h-full grid-flow-col grid-cols-[1fr_2fr]">
-          <ChatList />
-          <div className="grid w-full h-full grid-flow-col auto-cols-auto gap-1">
-            <ChatBox selectedChat={selectedChat} setSelectedChat={setSelectedChat} />
-            {show && <ChatDetails />}
+      <div className="w-full md:mt-6 h-[calc(100vh-90px)] md:h-[94vh] flex justify-center">
+        {!(screenSize === "medium" || screenSize === "large") && <ChatList
+          userId={user?._id!}
+          selectedChatId={selectedChat?._id}
+          className={(screenSize === "small" && selectedChat) ? "hidden" : ""}
+        />}
+
+        {screenSize === "small" && selectedChat && (
+          isDetailsOn ? (
+            <ChatDetails
+              userId={user?._id!}
+              selectedChat={selectedChat}
+              className="w-full"
+            />
+          ) : (
+            <ChatBox
+              userId={user?._id!}
+              selectedChat={selectedChat}
+              className="w-full"
+            />
+          )
+        )}
+
+        {screenSize === "medium" && (
+          <div className="grid w-[95%] h-full grid-flow-col grid-cols-[1fr_1fr]">
+            <ChatList userId={user?._id!} selectedChatId={selectedChat?._id} />
+            {isDetailsOn ? (
+              <ChatDetails
+                userId={user?._id!}
+                selectedChat={selectedChat}
+                className="md:rounded-tl-none md:rounded-bl-none border-l dark:border-primary-1"
+              />
+            ) : (
+              <ChatBox userId={user?._id!} selectedChat={selectedChat} />
+            )}
           </div>
-        </div>
+        )}
+
+        {screenSize === "large" && (
+          <div className="grid w-[95%] h-full grid-flow-col grid-cols-[1fr_2fr]">
+            <ChatList userId={user?._id!} selectedChatId={selectedChat?._id} />
+            <div className="flex w-full h-full gap-1">
+              <ChatBox
+                userId={user?._id!}
+                className={isDetailsOn ? "w-[55%]" : "w-[100%]"}
+                selectedChat={selectedChat}
+              />
+              {isDetailsOn && (
+                <ChatDetails
+                  userId={user?._id!}
+                  selectedChat={selectedChat}
+                  className="w-[45%]"
+                />
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </MainLayout>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;

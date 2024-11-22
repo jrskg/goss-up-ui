@@ -15,9 +15,9 @@
 
 // export { checkConnection }
 
-import type{ ChatType, IChat, ILastMessage } from '@/interface/interface';
+import type { Participants, ParticipantsMap } from '@/interface/chatInterface';
+import type { ChatType, ILastMessage } from '@/interface/interface';
 import { format, isAfter, isSameDay, isSameYear, subDays } from 'date-fns';
-import defaultAvatar from '../assets/defaultAvatar.jpg';
 
 const toggleDarkMode = (setDarkMode: boolean) => {
   const list = document.documentElement.classList;
@@ -108,26 +108,20 @@ const getDateStyle = (sId: string, lguId: string, chType: ChatType): string => {
   return "";
 }
 
-const getChatProfile = (ch: IChat, lgnUId: string): string => {
-  if (ch.chatType === "group") return ch.groupIcon ? ch.groupIcon.avatar : defaultAvatar;
-  let avatar = ch.participants[0]._id === lgnUId ? ch.participants[1].profilePic?.avatar : ch.participants[0].profilePic?.avatar;
-
-  return avatar ? avatar : defaultAvatar;
-}
 const getLastMessageText = (lastMessage?: ILastMessage): string => {
   if (!lastMessage) return "";
   if (lastMessage.messageType === "text") return lastMessage.content;
   return "Sent an attachment";
 }
 
+const getMapFromParticipants = (participants:Participants): ParticipantsMap => {
+  const map:ParticipantsMap = {};
+  participants.forEach(p => map[p._id] = p);
+  return map;
+}
+
 export {
-  getDateStr,
-  getMessageTimestamp, toggleDarkMode,
-  getMainConatainerStyle,
-  getAvatarStyle,
-  getMessageBoxStyle,
-  getNameStyle,
-  getDateStyle,
-  getChatProfile,
-  getLastMessageText
+  getAvatarStyle, getDateStr, getDateStyle,
+  getLastMessageText, getMainConatainerStyle, getMapFromParticipants, getMessageBoxStyle, getMessageTimestamp, getNameStyle, toggleDarkMode
 };
+
