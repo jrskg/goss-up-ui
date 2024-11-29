@@ -54,8 +54,32 @@ const validatePassword = (password: string): returnType => {
   return response;
 }
 
+const validateGroupName = (name: string): returnType => {
+  const response: returnType = {
+    isValid: true,
+    error: ''
+  };
+  // const regex = /^[_a-zA-Z0-9][a-zA-Z0-9 _-]{1,48}$/;
+  // const regex = /^[a-zA-Z0-9_.!-,'@&#$%()^ ]{3,}$/;
+  name = name.trim();
+  if (name == '') {
+    response.isValid = false;
+    response.error = 'Please enter group name';
+  }
+  else if(name.length < 3){
+    response.isValid = false;
+    response.error = 'Group name must be at least 3 characters long';
+  }
+  // else if(!regex.test(name)){
+  //   response.isValid = false;
+  //   response.error = 'Group name must contains alphabets, numbers and (_, -)';
+  // }
+  return response;
+}
+
 export {
   validateName,
   validateEmail,
-  validatePassword
+  validatePassword,
+  validateGroupName
 }

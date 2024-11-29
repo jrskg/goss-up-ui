@@ -25,15 +25,18 @@ const chatSlice = createSlice({
       state.chats = action.payload.chats;
       state.participants = getMapFromParticipants(action.payload.participants);
     },
+    updateChat(state, action: PayloadAction<IChat>) {
+      const idx = state.chats.findIndex((chat) => chat._id === action.payload._id);
+      if(idx !== -1){
+        state.chats[idx] = action.payload;
+      }
+    },
     addToChatState(state, action: PayloadAction<IChatPayloadMultiple>) {
-      state.chats.push(...action.payload.chats);
+      state.chats.unshift(...action.payload.chats);
       const newParticipants = getMapFromParticipants(action.payload.participants);
       Object.entries(newParticipants).forEach(([key, value]) => {
         state.participants[key] = value;
       });
-    },
-    addChat(state, action: PayloadAction<IChat>) {
-      state.chats.push(action.payload);
     },
     addParticipant(state, action: PayloadAction<Participants>) {
       const newParticipants = getMapFromParticipants(action.payload);
@@ -47,9 +50,34 @@ const chatSlice = createSlice({
         state.chats.splice(idx, 1);
       }
     },
+    toggleAdminInChatState(state, action: PayloadAction<{chatId: string, participantId: string}>) {
+      const chat = state.chats.find(chat => chat._id === action.payload.chatId);
+      if(chat && chat.chatType === "group"){
+        const idx = chat.admins.findIndex(a => a === action.payload.participantId);
+        if(idx === -1) chat.admins.push(action.payload.participantId);
+        else chat.admins.splice(idx, 1);
+      }
+    },
+    removeParticipantFromChatState(state, action: PayloadAction<{chatId: string, participantId: string}>) {
+      const chat = state.chats.find(chat => chat._id === action.payload.chatId);
+      if(chat && chat.chatType === "group"){
+        const pdx = chat.participants.findIndex(p => p === action.payload.participantId);
+        if(pdx !== -1) chat.participants.splice(pdx, 1);
+        const adx = chat.admins.findIndex(a => a === action.payload.participantId);
+        if(adx !== -1) chat.admins.splice(adx, 1);
+      }
+    }
   },
 });
 
-export const { setChatState, addToChatState, addChat, addParticipant, removeChat } = chatSlice.actions;
+export const { 
+  setChatState, 
+  addToChatState, 
+  addParticipant, 
+  removeChat, 
+  updateChat ,
+  toggleAdminInChatState,
+  removeParticipantFromChatState
+} = chatSlice.actions;
 export default chatSlice.reducer;
 

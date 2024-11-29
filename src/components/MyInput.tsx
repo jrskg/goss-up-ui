@@ -26,7 +26,7 @@ const MyInput: React.FC<MyInputProps> = ({
   const [visible, setVisible] = useState<boolean>(false);
   return (
     <div className="grid w-[100%] items-center gap-1 m-2 relative">
-      {label && <Label htmlFor={label} className={`text-xl ${error ? 'text-red-500' : ''}`}>{label}</Label>}
+      {label && <Label htmlFor={label} className={`text-lg ${error ? 'text-red-500' : ''}`}>{label}</Label>}
       <Input
         type={visible ? "text" : type}
         disabled={disabled}
@@ -34,7 +34,7 @@ const MyInput: React.FC<MyInputProps> = ({
         value={value}
         id={label}
         placeholder={placeholder}
-        className={`text-xl border-2 ${error ? 'border-red-500' : 'border-[#525252]'} py-5`}
+        className={`text-base border-2 ${error ? 'border-red-500' : 'border-[#525252]'} py-5`}
         name={name}
       />
       {error ? 

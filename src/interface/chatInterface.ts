@@ -39,15 +39,16 @@ interface BaseChat {
 }
 
 // Conditional type to make `groupName` required for group chats
-interface GroupChat extends BaseChat {
+export interface GroupChat extends BaseChat {
   chatType: "group";
   groupName: string;
   groupIcon?: Image
 }
 
-interface OneToOneChat extends BaseChat {
+export interface OneToOneChat extends BaseChat {
   chatType: "one-to-one";
   groupName?: never;
+  groupIcon?: never
 }
 
 export type Participants = IUserShortWithBio[];
@@ -57,6 +58,10 @@ export interface IGetChatsResponse{
   hasMore: boolean;
   totalChats: number;
   chats: IChat[];
+  participants: Participants
+}
+export interface IGetSingleChatResponse{
+  chatData: IChat;
   participants: Participants
 }
 export type IChat = GroupChat | OneToOneChat;

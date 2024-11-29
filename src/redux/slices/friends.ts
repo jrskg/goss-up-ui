@@ -28,6 +28,21 @@ const friendSlice = createSlice({
       state.searchedFriends = [...state.searchedFriends, ...action.payload];
     },
     clearSearchedFriends: (state) => {
+      const combined: Friend[] = [];
+      const seen = new Set<string>();
+      state.friends.forEach(friend => {
+        if (!seen.has(friend._id)) {
+          seen.add(friend._id);
+          combined.push(friend);
+        }
+      });
+      state.searchedFriends.forEach(friend => {
+        if (!seen.has(friend._id)) {
+          seen.add(friend._id);
+          combined.push(friend);
+        }
+      });
+      state.friends = combined;
       state.searchedFriends = [];
     }
   }

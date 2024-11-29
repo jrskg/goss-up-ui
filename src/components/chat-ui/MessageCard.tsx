@@ -79,7 +79,7 @@ const MessageCard: React.FC<MessageCardProps> = ({
   return (
     <div className={`relative flex w-full mb-5 ${getMainConatainerStyle(senderId, loggedInUserId)}`}>
       <Avatar className={`w-8 h-8 ${getAvatarStyle(senderId, loggedInUserId, chatType, prevSenderId)}`}>
-        <AvatarImage src={senderAvatar} />
+        <AvatarImage className='object-cover' src={senderAvatar} />
         <AvatarFallback>U</AvatarFallback>
       </Avatar>
       <div className={

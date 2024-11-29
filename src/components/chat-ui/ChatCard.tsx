@@ -28,7 +28,7 @@ const ChatCard: React.FC<ChatCardProps> = ({
     >
       <div className='flex items-center gap-2'>
         <Avatar className='w-12 h-12'>
-          <AvatarImage src={avatar} alt="user" />
+          <AvatarImage className='object-cover' src={avatar} alt="user" />
           <AvatarFallback>C</AvatarFallback>
         </Avatar>
         <div>

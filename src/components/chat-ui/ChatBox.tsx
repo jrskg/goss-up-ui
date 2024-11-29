@@ -1,28 +1,30 @@
+import { LoggedInUserContext, ParticipantsContext, SelectedChatContext } from '@/context/contexts'
 import { useGetParticipantsInfo } from '@/hooks/chatHooks'
-import { useAppDispatch, useAppSelector } from '@/hooks/hooks'
+import { useAppDispatch } from '@/hooks/hooks'
 import { cn } from '@/lib/utils'
 import { setIsDetailsOn, setSelectedChat } from '@/redux/slices/selectedChat'
 import { AvatarImage } from '@radix-ui/react-avatar'
 import { MessageCircleMoreIcon, PaperclipIcon, SendHorizonalIcon, XIcon } from 'lucide-react'
-import React, { memo } from 'react'
+import React, { memo, useContext } from 'react'
 import { Avatar } from '../ui/avatar'
 import { Textarea } from '../ui/textarea'
 import MessageContainer from './MessageContainer'
-import { IChat } from '@/interface/chatInterface'
 
 interface ChatBoxProps {
   className?:string;
-  selectedChat:IChat | null;
-  userId:string;
+  // selectedChat:IChat | null;
+  // userId:string;
 }
 const ChatBox: React.FC<ChatBoxProps> = ({
   className,
-  selectedChat,
-  userId
+  // selectedChat,
+  // userId
 }) => {
   console.log("CHAT BOX rendering... chatbox"+ Math.random());
+  const {_id:userId} = useContext(LoggedInUserContext)!;
+  const participants = useContext(ParticipantsContext)!;
+  const selectedChat = useContext(SelectedChatContext);
   const dispatch = useAppDispatch();
-  const {participants} = useAppSelector(state => state.chats);
   const {getChatAvatar, getChatName} = useGetParticipantsInfo(participants, userId);
   const handleCloseChat = () => {
     dispatch(setSelectedChat(null));
@@ -36,7 +38,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
         selectedChat ? <>
           <div onClick={handleDetailsClick} className='w-full bg-primary-1 dark:bg-dark-3 px-5 py-2 md:rounded-tr-md flex items-center gap-2 h-[65px] relative cursor-pointer'>
             <Avatar className='w-12 h-12'>
-              <AvatarImage src={getChatAvatar(selectedChat)} />
+              <AvatarImage className='object-cover' src={getChatAvatar(selectedChat)} />
             </Avatar>
             <div>
               <p className='text-xl font-bold leading-none'>{getChatName(selectedChat)}</p>

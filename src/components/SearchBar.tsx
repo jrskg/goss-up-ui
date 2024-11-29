@@ -13,11 +13,13 @@ interface SearchBarProps {
   inputClassName?: string
   className?: string
   placeholder?: string
+  onFocus?: () => void
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
   disabled = false,
   onChange = () => { },
+  onFocus = () => { },
   searchHandler = () => { },
   value = '',
   hasButton = true,
@@ -35,6 +37,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           onChange={(e) => onChange(e.target.value)}
           disabled={disabled}
           placeholder={placeholder}
+          onFocus={() => onFocus()}
         />
       </div>
       {
