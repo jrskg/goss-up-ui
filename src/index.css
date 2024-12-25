@@ -81,7 +81,7 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: transparent;
+  background-color: red;
   border-radius: 6px;
 }
 

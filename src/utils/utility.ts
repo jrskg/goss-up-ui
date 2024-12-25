@@ -15,8 +15,7 @@
 
 // export { checkConnection }
 
-import type { Participants, ParticipantsMap } from '@/interface/chatInterface';
-import type { ChatType, ILastMessage } from '@/interface/interface';
+import type { Participants, ParticipantsMap, ChatType, ILastMessage } from '@/interface/chatInterface';
 import { format, isAfter, isSameDay, isSameYear, subDays } from 'date-fns';
 
 const toggleDarkMode = (setDarkMode: boolean) => {
@@ -45,22 +44,40 @@ const getDateStr = (createdAt: string) => {
   return Math.floor(diffDays / 7) + " weeks ago";
 }
 
-const getMessageTimestamp = (date: Date) => {
+const getMessageTimestamp = (date?: Date):{time: string, date?: string} => {
+  if (!date) {
+    return {time: "", date: ""};
+  }
   const now = new Date();
-
   if (isSameDay(date, now)) {
-    return format(date, 'p'); // "10:45 AM"
+    return {time: format(date, 'p'), date:"Today"}; // "10:45 AM"
   }
   if (isSameDay(date, subDays(now, 1))) {
-    return `Yesterday, ${format(date, 'p')}`; // "Yesterday, 9:30 PM"
+    // return `Yesterday, ${format(date, 'p')}`; // "Yesterday, 9:30 PM"
+    return {
+      time: format(date, 'p'),
+      date: 'Yesterday'
+    }
   }
   if (isAfter(date, subDays(now, 7))) {
-    return format(date, 'EEE, p'); // "Wed, 2:15 PM"
+    // return format(date, 'EEE, p'); // "Wed, 2:15 PM"
+    return {
+      time: format(date, 'p'),
+      date: format(date, 'EEE')
+    }
   }
   if (isSameYear(date, now)) {
-    return format(date, 'd MMM, p'); // "11 Jun, 5:00 PM"
+    // return format(date, 'd MMM, p'); // "11 Jun, 5:00 PM"
+    return{
+      time: format(date, 'p'),
+      date: format(date, 'd MMM')
+    }
   }
-  return format(date, 'd MMM yyyy'); // "11 Jun 2023, 5:00 PM"
+  // return format(date, 'd MMM yyyy'); // "11 Jun 2023, 5:00 PM"
+  return {
+    time: format(date, 'p'),
+    date: format(date, 'd MMM yyyy')
+  }
 };
 
 const getMainConatainerStyle = (sId: string, lguId: string): string => {
@@ -82,12 +99,22 @@ const getAvatarStyle = (sId: string, lguId: string, chType: ChatType, psId?: str
 const getMessageBoxStyle = (sId: string, lguId: string, chType: ChatType, psId?: string): string => {
   const isAvatarVisible = getAvatarStyle(sId, lguId, chType, psId) === "block";
   if (sId === lguId) {
-    return sId === psId ? "mr-2 rounded-3xl" : "mr-2 rounded-3xl rounded-tr-none";
+    return sId === psId ? "mr-2 rounded-xl" : "mr-2 rounded-xl rounded-tr-none";
+    // return sId === psId ? "rounded-3xl" : "rounded-3xl rounded-tr-none";
   } else if (chType === "one-to-one") {
-    return sId === psId ? "ml-2 rounded-3xl" : "ml-2 rounded-3xl rounded-tl-none";
+    // return sId === psId ? "rounded-3xl" : "rounded-3xl rounded-tl-none";
+    return sId === psId ? "ml-2 rounded-xl" : "ml-2 rounded-xl rounded-tl-none";
   }
-  return isAvatarVisible ? "rounded-3xl rounded-tl-none" : "rounded-3xl ml-10";
+  return isAvatarVisible ? "rounded-xl rounded-tl-none" : "rounded-xl ml-10";
 }
+
+const getTriangleStyle = (sId: string, lguId: string, psId?: string): string => {
+  if (sId === lguId) {
+    return sId === psId ? "hidden" : "-right-3";
+  } 
+  return sId === psId ? "hidden" : "-left-3";
+}
+
 const getNameStyle = (sId: string, lguId: string, chType: ChatType, psId?: string): string => {
   if (sId === lguId) {
     return "hidden";
@@ -121,7 +148,16 @@ const getMapFromParticipants = (participants:Participants): ParticipantsMap => {
 }
 
 export {
-  getAvatarStyle, getDateStr, getDateStyle,
-  getLastMessageText, getMainConatainerStyle, getMapFromParticipants, getMessageBoxStyle, getMessageTimestamp, getNameStyle, toggleDarkMode
+  getAvatarStyle,
+  getDateStr, 
+  getDateStyle,
+  getLastMessageText, 
+  getMainConatainerStyle, 
+  getMapFromParticipants, 
+  getMessageBoxStyle, 
+  getMessageTimestamp, 
+  getNameStyle, 
+  toggleDarkMode,
+  getTriangleStyle
 };
 

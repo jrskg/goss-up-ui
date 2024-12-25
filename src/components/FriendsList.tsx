@@ -1,6 +1,7 @@
 import { useGetAndSearchFriends } from '@/hooks/friendshipHooks'
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
 import FriendsPageLayout from '@/layouts/FriendsPageLayout'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import FriendCard from './FriendCard'
 import Loader from './Loader'
@@ -14,39 +15,23 @@ const FriendsList: React.FC = () => {
 
   const { friends, getFriends, mainLoading, moreLoading, hasMore, searchedHasMore, searchInFriends, searchedFriends, clearSearchResult } = useGetAndSearchFriends();
   const navigate = useNavigate();
+  const {setLastElement} = useInfiniteScroll({
+    hasMore,
+    isLoading: mainLoading || moreLoading,
+    onLoadMore: async () => {
+      setPage(prev => prev + 1);
+      await getFriends(page + 1);
+    }
+  });
 
-  const observer = useRef<IntersectionObserver | null>(null);
-  const searchedObserver = useRef<IntersectionObserver | null>(null);
-
-  const lastFriendElementRef = useCallback(
-    (node: HTMLDivElement) => {
-      if (mainLoading || moreLoading) return;
-      if (observer.current) observer.current.disconnect();
-      observer.current = new IntersectionObserver(async entries => {
-        if (entries[0].isIntersecting && hasMore) {
-          setPage(prev => prev + 1);
-          await getFriends(page + 1);
-        }
-      });
-      if (node) observer.current.observe(node);
-    },
-    [hasMore, mainLoading, moreLoading],
-  )
-
-  const lastSearchedFriendElementRef = useCallback(
-    (node: HTMLDivElement) => {
-      if (mainLoading || moreLoading) return;
-      if (searchedObserver.current) searchedObserver.current.disconnect();
-      searchedObserver.current = new IntersectionObserver(async entries => {
-        if (entries[0].isIntersecting && searchedHasMore && searchQuery.trim()) {
-          setSearchedPage(prev => prev + 1);
-          await searchInFriends(searchedPage + 1, searchQuery);
-        }
-      });
-      if (node) searchedObserver.current.observe(node);
-    },
-    [searchedHasMore, mainLoading, moreLoading, searchQuery],
-  )
+  const {setLastElement:setLastSearchedElement} = useInfiniteScroll({
+    hasMore: searchedHasMore,
+    isLoading: mainLoading || moreLoading,
+    onLoadMore: async () => {
+      setSearchedPage(prev => prev + 1);
+      await searchInFriends(searchedPage + 1, searchQuery);
+    }
+  });
 
   const handleSearch = useCallback(
     async () => {
@@ -119,7 +104,7 @@ const FriendsList: React.FC = () => {
                     )
                   }
                   return dataToDisplay.map((item, index) => dataToDisplay.length - 1 === index ? (
-                    <div key={item._id} ref={searchedFriends.length > 0 ? lastSearchedFriendElementRef : lastFriendElementRef}>
+                    <div key={item._id} ref={searchedFriends.length > 0 ? setLastSearchedElement : setLastElement}>
                       <FriendCard
                         name={item.friend.name}
                         navigate={navigate}

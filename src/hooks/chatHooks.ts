@@ -1,38 +1,66 @@
 import { ChatsContext } from "@/context/contexts";
 import type { IChat, IGetChatsResponse, IGetSingleChatResponse, Participants, ParticipantsMap } from "@/interface/chatInterface";
 import type { Image, ResponseWithData, ResponseWithoutData } from "@/interface/interface";
-import { addToChatState, setChatState } from "@/redux/slices/chats";
+import { appendToChatState, setChatState } from "@/redux/slices/chats";
 import instance from "@/utils/axiosInstance";
 import { AxiosError } from "axios";
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { toast } from "sonner";
 import defaultAvatar from "../assets/defaultAvatar.jpg";
 import { useAppDispatch } from "./hooks";
+import { useInfiniteScroll } from "./useInfiniteScroll";
+import { useSelectedChatRef } from "@/context/selectedChatRefContext";
+import { useSocket } from "@/context/socketContext";
+import { setSelectedChat } from "@/redux/slices/selectedChat";
+import { SOCKET_EVENTS } from "@/utils/constants";
+import { initilizeMessagesTemp } from "@/redux/slices/messages";
 
 type ChatReturn = {
   chat: IChat,
   participants: Participants
 } | null;
 
-const useGetAllChats = (chats: IChat[]) => {
+const useSetSelectedChat = () => {
+  const dispatch = useAppDispatch();
+  const selectedChatRef = useSelectedChatRef();
+  const {socket} = useSocket();
+
+  const handleSelectedChat = (chat: IChat | null) => {
+    if(chat && socket){
+      socket.emit(SOCKET_EVENTS.JOIN_ROOM, {
+        currRoomId: chat._id,
+        prevRoomId: selectedChatRef.current?._id || null
+      })
+    }
+    if(!chat && socket){
+      socket.emit(SOCKET_EVENTS.LEAVE_ROOM, {
+        roomId: selectedChatRef.current?._id!
+      })
+    }
+    dispatch(setSelectedChat(chat));
+    selectedChatRef.current = chat;
+  }
+
+  return handleSelectedChat
+}
+
+const useGetAllChats = (chats: IChat[], rootElement:React.MutableRefObject<HTMLDivElement | null>) => {
   const [loading, setLoading] = useState(false);
   const [moreLoading, setMoreLoading] = useState(false);
   const dispatch = useAppDispatch();
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
 
-  const observer = useRef<IntersectionObserver | null>(null);
-  const lastElementRef = useCallback((node: HTMLDivElement) => {
-    if (loading || moreLoading) return;
-    if (observer.current) observer.current.disconnect();
-    observer.current = new IntersectionObserver(async (entries) => {
-      if (entries[0].isIntersecting && hasMore) {
-        setPage(prevPage => prevPage + 1);
-        await getAllChats(page + 1);
-      }
-    });
-    if (node) observer.current.observe(node);
-  }, [hasMore, loading, moreLoading]);
+  const {setLastElement} = useInfiniteScroll({
+    root:rootElement.current,
+    threshold:0.5,
+    isLoading: moreLoading,
+    hasMore,
+    onLoadMore: async() => {
+      setPage(prevPage => prevPage + 1);
+      await getAllChats(page + 1); 
+    }
+  })
 
   const getAllChats = async (page: number) => {
     try {
@@ -41,8 +69,9 @@ const useGetAllChats = (chats: IChat[]) => {
       const { data } = await instance.get<ResponseWithData<IGetChatsResponse>>(`/chat/all?page=${page}`);
       if (data.success) {
         if (page === 1) dispatch(setChatState({ chats: data.data.chats, participants: data.data.participants }));
-        else dispatch(addToChatState({ chats: data.data.chats, participants: data.data.participants }));
+        else dispatch(appendToChatState({ chats: data.data.chats, participants: data.data.participants }));
         setHasMore(data.data.hasMore);
+        dispatch(initilizeMessagesTemp(data.data.chats.map(ch => ch._id)));
       }
     } catch (error) {
       if (error instanceof AxiosError && error.response) {
@@ -60,9 +89,7 @@ const useGetAllChats = (chats: IChat[]) => {
   return {
     loading,
     moreLoading,
-    hasMore,
-    lastElementRef,
-    getAllChats,
+    setLastElement,
   }
 }
 const useGetParticipantsInfo = (participants: ParticipantsMap, userId: string) => {
@@ -159,12 +186,28 @@ const useChatActions = (loggedInUserId: string) => {
     } finally { setLoading(false) }
     return false;
   }
+  const leaveGroup = async (groupId: string): Promise<boolean> => {
+    try {
+      setLoading(true);
+      const {data} = await instance.delete<ResponseWithoutData>(`/chat/group/leave?groupId=${groupId}`);
+      if(data.success){
+        toast.info(data.message);
+        return true;
+      }
+    } catch (error) {
+      if(error instanceof AxiosError && error.response){
+        toast.error(error.response.data.message);
+      }
+    }finally{ setLoading(false) }
+    return false;
+  }
   return {
     toggleAdmin,
     removeFromGroup,
     loading,
     createOneToOneChat,
     chats,
+    leaveGroup
   }
 }
 
@@ -279,9 +322,8 @@ const useUpdateGroupChat = (groupId: string) => {
 }
 
 export {
-  useChatActions, useGetAllChats,
-  useGetParticipantsInfo,
-  useCreateGroupChat,
-  useUpdateGroupChat
+  useChatActions, useCreateGroupChat, useGetAllChats,
+  useGetParticipantsInfo, useUpdateGroupChat,
+  useSetSelectedChat
 };
 

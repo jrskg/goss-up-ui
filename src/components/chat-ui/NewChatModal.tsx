@@ -1,13 +1,12 @@
 import { LoggedInUserContext } from '@/context/contexts';
-import { useChatActions } from '@/hooks/chatHooks';
+import { useChatActions, useSetSelectedChat } from '@/hooks/chatHooks';
 import { useAppDispatch } from '@/hooks/hooks';
 import { addToChatState } from '@/redux/slices/chats';
-import { setSelectedChat } from '@/redux/slices/selectedChat';
 import React, { Dispatch, SetStateAction, useCallback, useContext, useRef } from 'react';
+import { toast } from 'sonner';
 import Loader from '../Loader';
 import MyDialog from '../MyDialogue';
 import FriendSelector from './FriendSelector';
-import { toast } from 'sonner';
 
 interface Props {
   isOpen: boolean;
@@ -21,6 +20,7 @@ const NewChatModal: React.FC<Props> = ({
   const {createOneToOneChat, loading} = useChatActions(loggedInUserId);
   const dispatch = useAppDispatch();
   const loadingRef = useRef(false);
+  const handleSelectedChat = useSetSelectedChat();
   
   const onFriendClick = useCallback(async(friendId: string) => {
     if(!friendId || loadingRef.current){
@@ -33,7 +33,7 @@ const NewChatModal: React.FC<Props> = ({
     if(response.participants.length > 0){
       dispatch(addToChatState({chats:[response.chat], participants:response.participants}));
     }
-    dispatch(setSelectedChat(response.chat));
+    handleSelectedChat(response.chat);
     loadingRef.current = false;
     onClose(false);
   }, [createOneToOneChat, dispatch, onClose]);
@@ -50,6 +50,7 @@ const NewChatModal: React.FC<Props> = ({
         </div>
       }
     >
+      {/* <div className='h-[200px]'> */}
       <div className='min-h-[400px] max-h-[75vh] h-[60vh]'>
         <FriendSelector onFriendClick={onFriendClick} />
       </div>

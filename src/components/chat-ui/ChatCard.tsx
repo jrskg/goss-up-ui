@@ -11,6 +11,7 @@ interface ChatCardProps {
   chat: IChat
   onChatClick: (chat: IChat) => void
   isChatSelected?: boolean
+  newMessageCount: number
 }
 const ChatCard: React.FC<ChatCardProps> = ({
   avatar,
@@ -19,9 +20,10 @@ const ChatCard: React.FC<ChatCardProps> = ({
   lastMessageTime,
   chat,
   onChatClick,
-  isChatSelected = false
+  isChatSelected = false,
+  newMessageCount = 0
 }) => {
-  console.log("CARD rendering... "+ Math.random(), isChatSelected);
+  console.log("CARD rendering... " + Math.random(), isChatSelected);
   return (
     <div className={cn("flex items-center justify-between px-2 py-3 hover:bg-primary-5 dark:hover:bg-dark-3 cursor-pointer", isChatSelected && "bg-primary-2 dark:bg-dark-4")}
       onClick={() => onChatClick(chat)}
@@ -33,7 +35,7 @@ const ChatCard: React.FC<ChatCardProps> = ({
         </Avatar>
         <div>
           <p className='text-lg font-bold'>{chatName}</p>
-          {lastMessage && <p className='text-sm'>{lastMessage}</p>}
+          {newMessageCount > 0 ? <p className='text-sm text-green-800 dark:text-success font-bold'>{newMessageCount} New Messages</p> : lastMessage && <p className='text-sm'>{"lastMessage"}</p>}
         </div>
       </div>
       <div>

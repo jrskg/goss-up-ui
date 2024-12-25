@@ -1,22 +1,24 @@
 import { LoggedInUserContext, ParticipantsContext, SelectedChatContext } from '@/context/contexts';
-import { useChatActions, useGetParticipantsInfo } from '@/hooks/chatHooks';
+import { useChatActions, useGetParticipantsInfo, useSetSelectedChat } from '@/hooks/chatHooks';
 import { useAppDispatch } from '@/hooks/hooks';
 import type { Participants } from '@/interface/chatInterface';
 import { cn } from '@/lib/utils';
-import { addToChatState, removeParticipantFromChatState, toggleAdminInChatState } from '@/redux/slices/chats';
-import { removeParticipantFromSelectedChat, setIsDetailsOn, setSelectedChat, toggleAdminInSelectedChat } from '@/redux/slices/selectedChat';
+import { addToChatState, removeChat, removeParticipantFromChatState, toggleAdminInChatState } from '@/redux/slices/chats';
+import { removeParticipantFromSelectedChat, setIsDetailsOn, toggleAdminInSelectedChat } from '@/redux/slices/selectedChat';
 import { getJITBtnStyle } from '@/utils/styleUtils';
 import { DialogDescription } from '@radix-ui/react-dialog';
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { PencilIcon, Plus, XIcon } from 'lucide-react';
+import { LogOutIcon, PencilIcon, Plus, XIcon } from 'lucide-react';
 import React, { memo, useCallback, useContext, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import Loader from '../Loader';
+import { MyAlert } from '../MyAlert';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogTitle } from '../ui/dialog';
-import GroupMemberCard from './GroupMemberCard';
 import CreateGroupChatModal from './CreateGroupChatModal';
+import GroupMemberCard from './GroupMemberCard';
 import UpdateGroupModal from './UpdateGroupModal';
 
 export interface ClickedMemberInfo {
@@ -26,14 +28,17 @@ export interface ClickedMemberInfo {
 }
 interface ChatDetailsProps {
   className?: string;
-  // selectedChat: IChat | null;
-  // userId: string;
 }
 const ChatDetails: React.FC<ChatDetailsProps> = ({
   className,
-  // selectedChat,
-  // userId
 }) => {
+  const [addParticipantsModal, setAddParticipantsModal] = useState(false);
+  const [updateGroupModal, setUpdateGroupModal] = useState(false);
+  const [clickedMember, setClickedMember] = useState<ClickedMemberInfo | null>(null);
+
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+
   const { _id: userId } = useContext(LoggedInUserContext)!;
   const participants = useContext(ParticipantsContext)!;
   const selectedChat = useContext(SelectedChatContext);
@@ -42,18 +47,20 @@ const ChatDetails: React.FC<ChatDetailsProps> = ({
     if (!selectedChat) return [];
     return selectedChat.participants.map(p => participants[p]);
   }, [participants, selectedChat]);
-  const dispatch = useAppDispatch();
-  const [clickedMember, setClickedMember] = useState<ClickedMemberInfo | null>(null);
-  const navigate = useNavigate();
-  const { loading, removeFromGroup, createOneToOneChat, toggleAdmin } = useChatActions(userId);
-
-  const [addParticipantsModal, setAddParticipantsModal] = useState(false);
-  const [updateGroupModal, setUpdateGroupModal] = useState(false);
+  const { 
+    loading, 
+    removeFromGroup, 
+    createOneToOneChat, 
+    toggleAdmin,
+    leaveGroup
+  } = useChatActions(userId);
 
   const isLoggedInUserAdmin = useMemo(() => {
     if (!selectedChat) return false;
     return selectedChat.admins.includes(userId);
   }, [selectedChat, userId]);
+
+  const handleSelectedChat = useSetSelectedChat();
 
   const handleDetailClose = () => {
     dispatch(setIsDetailsOn(false));
@@ -73,7 +80,7 @@ const ChatDetails: React.FC<ChatDetailsProps> = ({
     if (response.participants && response.participants.length) {
       dispatch(addToChatState({ chats: [response.chat], participants: response.participants }));
     }
-    dispatch(setSelectedChat(response.chat));
+    handleSelectedChat(response.chat);
     setClickedMember(null);
   }
 
@@ -96,6 +103,15 @@ const ChatDetails: React.FC<ChatDetailsProps> = ({
     setClickedMember(null);
   }
 
+  const handleLeaveGroup = async() => {
+    if (!selectedChat) return;
+    const response = await leaveGroup(selectedChat._id);
+    if (response) {
+      dispatch(removeChat(selectedChat._id));
+      handleSelectedChat(null);
+    }
+  }
+
   console.log("CHAT DETAILS rendering..." + Math.random());
   return (
     <div className={cn('relative bg-primary-4 dark:bg-dark-2 w-full h-full md:rounded-md', className)}>
@@ -104,7 +120,17 @@ const ChatDetails: React.FC<ChatDetailsProps> = ({
         onClose={setAddParticipantsModal}
         isAddParticipant={true}
       />
-      <Dialog open={clickedMember !== null} onOpenChange={() => setClickedMember(null)}>
+      <Dialog 
+        open={clickedMember !== null} 
+        onOpenChange={() => {
+          if(loading){
+            toast.warning("Wait a second...");
+            return;
+          }
+          setClickedMember(null)
+        }}
+        
+      >
         <DialogContent className="sm:max-w-[425px]">
           <VisuallyHidden>
             <DialogDescription />
@@ -154,10 +180,16 @@ const ChatDetails: React.FC<ChatDetailsProps> = ({
                   />
                   <p className='text-sm text-center'>{selectedChat.participants.length} members</p>
                   {isLoggedInUserAdmin && <div className='w-full flex flex-wrap items-center justify-center gap-1'>
-                    <Button className='bg-success dark:bg-primary-3 text-dark-1' onClick={() => setAddParticipantsModal(true)}>
+                    <Button
+                      className='bg-success dark:bg-primary-3 text-dark-1'
+                      onClick={() => setAddParticipantsModal(true)}
+                    >
                       <Plus className='w-5 h-5 mr-1' /> Add
                     </Button>
-                    <Button className='bg-success dark:bg-primary-3 text-dark-1' onClick={() => setUpdateGroupModal(true)}>
+                    <Button
+                      className='bg-success dark:bg-primary-3 text-dark-1'
+                      onClick={() => setUpdateGroupModal(true)}
+                    >
                       <PencilIcon className='w-5 h-5 mr-1' /> Update Name & Icon
                     </Button>
                   </div>}
@@ -176,6 +208,23 @@ const ChatDetails: React.FC<ChatDetailsProps> = ({
                         />
                       ))
                     }
+                  </div>
+                  <div className='w-full flex justify-center mt-2'>
+                    <MyAlert
+                      alertTriggerComponent={
+                        <Button
+                          className='bg-danger hover:bg-[red] text-dark-1'
+                        >
+                          <LogOutIcon className='w-5 h-5 mr-1' /> Leave Group
+                        </Button>
+                      }
+                      title="Leave Group"
+                      description="Are you sure you want to leave this group?"
+                      okText="Leave"
+                      okHandler={handleLeaveGroup}
+                      loading={loading}
+                      okBtnClassName='bg-danger hover:bg-[red] dark:bg-danger dark:hover:bg-danger'
+                    />
                   </div>
                 </>
               }

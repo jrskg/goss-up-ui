@@ -1,5 +1,6 @@
 import Loader from "@/components/Loader";
 import MyButton from "@/components/MyButton";
+import { useSocket } from "@/context/socketContext";
 import { useAppDispatch } from "@/hooks/hooks";
 import { useLocalStorageForRoute } from "@/hooks/useLocalStorage";
 import type { LoadUserResponse } from "@/interface/interface";
@@ -18,6 +19,7 @@ const Verification: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { setVerificationAccess, setInitialStepperAccess } = useLocalStorageForRoute();
+  const {reconnectSocket} = useSocket();
 
   const verifyEmail = async () => {
     try {
@@ -25,6 +27,7 @@ const Verification: React.FC = () => {
       const { data } = await instance.get<LoadUserResponse>(`/user/verify/${veriticationToken}`);
       if (data.success) {
         toast.success(data.message);
+        reconnectSocket();
         setStatus("verified");
         dispatch(setJustUser(data.data));
         setVerificationAccess(false);

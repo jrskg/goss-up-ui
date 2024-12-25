@@ -1,8 +1,8 @@
 import { SelectedChatContext } from '@/context/contexts';
-import { useCreateGroupChat } from '@/hooks/chatHooks';
+import { useCreateGroupChat, useSetSelectedChat } from '@/hooks/chatHooks';
 import { useAppDispatch } from '@/hooks/hooks';
+import { IChat } from '@/interface/chatInterface';
 import { addParticipant, addToChatState, updateChat } from '@/redux/slices/chats';
-import { setSelectedChat } from '@/redux/slices/selectedChat';
 import { validateGroupName } from '@/utils/validation';
 import { XIcon } from 'lucide-react';
 import React, { Dispatch, memo, SetStateAction, useCallback, useContext, useRef, useState } from 'react';
@@ -11,7 +11,6 @@ import MyButton from '../MyButton';
 import MyDialog from '../MyDialogue';
 import MyInput from '../MyInput';
 import FriendSelector from './FriendSelector';
-import { IChat } from '@/interface/chatInterface';
 
 interface Props {
   isOpen: boolean;
@@ -36,6 +35,7 @@ const CreateGroupChatModal: React.FC<Props> = ({
   const loadingRef = useRef(false);
   const dispatch = useAppDispatch();
   const selectedChat = useContext(SelectedChatContext)!;
+  const handleSelectedChat = useSetSelectedChat();
 
   const handleGroupNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setGroupName(e.target.value);
@@ -64,7 +64,7 @@ const CreateGroupChatModal: React.FC<Props> = ({
         ...selectedChat,
         participants: [...selectedChat.participants, ...newParticipants]
       };
-      dispatch(setSelectedChat(updatedChat));
+      handleSelectedChat(updatedChat);
       dispatch(updateChat(updatedChat));
       dispatch(addParticipant(response));
     } else {
@@ -80,7 +80,7 @@ const CreateGroupChatModal: React.FC<Props> = ({
       loadingRef.current = false;
       if (!response) return;
       dispatch(addToChatState({ chats: [response.chat], participants: response.participants }));
-      dispatch(setSelectedChat(response.chat));
+      handleSelectedChat(response.chat);
     }
     resetModalState();
     onClose(false);

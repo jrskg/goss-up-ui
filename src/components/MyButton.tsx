@@ -1,6 +1,7 @@
 import React from 'react'
 import Spinner from './Spinner'
 import { Button } from './ui/button'
+import { cn } from '@/lib/utils'
 
 interface BtnProps {
   title: string
@@ -21,12 +22,12 @@ const MyButton: React.FC<BtnProps> = ({
   icon
 }) => {
   return (
-    <div className={`relative w-full ${className}`}>
+    <div className={cn("relative w-full", className)}>
       <Button
-        className={`bg-blue-500 w-full hover:bg-blue-600 text-sm md:text-lg transition duration-500 dark:bg-dark-3 text-white dark:hover:bg-dark-4 ${btnClassName}`}
+        className={cn("bg-blue-500 w-full hover:bg-blue-600 transition duration-500 dark:bg-dark-3 text-white dark:hover:bg-dark-4", btnClassName)}
         onClick={onClick}
         disabled={disabled || loading}
-      >{loading ? <Spinner/> : icon}{title}</Button>
+      >{loading ? <Spinner /> : icon}{title}</Button>
     </div>
   )
 }

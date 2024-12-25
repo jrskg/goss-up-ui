@@ -17,7 +17,9 @@ const selectedChatSlice = createSlice({
   reducers: {
     setSelectedChat(state, action: PayloadAction<IChat | null>) {
       state.selectedChat = action.payload;
-      // state.isDetailsOn = false;
+      if(action.payload === null){
+        state.isDetailsOn = false;
+      }
     },
     setIsDetailsOn(state, action: PayloadAction<boolean>) {
       state.isDetailsOn = action.payload;  

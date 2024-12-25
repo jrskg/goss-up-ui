@@ -18,3 +18,16 @@ export const BIO_LISTS = [
 ];
 
 export const SPECIAL_VALUE_WHEN_USER_NULL = "special-value-when-user-is-null";
+
+export const SOCKET_EVENTS = {
+  JOIN_ROOM: "join_room",
+  LEAVE_ROOM: "leave_room",
+  SEND_MESSAGE: "send_message",
+  NEW_MESSAGE: "new_message",
+  USER_JOINED: "user_joined",
+  USER_LEFT: "user_left",
+  USER_TYPING: "user_typing",
+  USER_STOP_TYPING: "user_stop_typing",
+  USER_ONLINE: "user_online",
+  USER_OFFLINE: "user_offline"
+} as const;

@@ -1,19 +1,18 @@
-import React, { Dispatch, SetStateAction, useContext, useEffect, useRef, useState } from 'react'
-import MyDialog from '../MyDialogue'
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import defaultAvatar from '../../assets/defaultAvatar.jpg'
-import { CameraIcon } from 'lucide-react';
-import MyButton from '../MyButton';
-import { cn } from '@/lib/utils';
-import MyInput from '../MyInput';
-import { validateGroupName } from '@/utils/validation';
-import { useUpdateGroupChat } from '@/hooks/chatHooks';
+import { SelectedChatContext } from '@/context/contexts';
+import { useSetSelectedChat, useUpdateGroupChat } from '@/hooks/chatHooks';
 import { useAppDispatch } from '@/hooks/hooks';
 import type { GroupChat, IChat } from '@/interface/chatInterface';
-import { AppDispatch } from '@/redux/store';
-import { setSelectedChat } from '@/redux/slices/selectedChat';
+import { cn } from '@/lib/utils';
 import { updateChat } from '@/redux/slices/chats';
-import { SelectedChatContext } from '@/context/contexts';
+import { AppDispatch } from '@/redux/store';
+import { validateGroupName } from '@/utils/validation';
+import { CameraIcon } from 'lucide-react';
+import React, { Dispatch, SetStateAction, useContext, useEffect, useRef, useState } from 'react';
+import defaultAvatar from '../../assets/defaultAvatar.jpg';
+import MyButton from '../MyButton';
+import MyDialog from '../MyDialogue';
+import MyInput from '../MyInput';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 interface Props {
   isOpen: boolean
@@ -37,8 +36,9 @@ const UpdateGroupModal: React.FC<Props> = ({
     uploadGroupIcon
   } = useUpdateGroupChat(selectedChat._id);
   const dispatch = useAppDispatch();
+  const handleSelectedChat = useSetSelectedChat();
   const handleStateUpdates = (updatedChat: IChat) => (dispatch: AppDispatch) => {
-    dispatch(setSelectedChat(updatedChat));
+    handleSelectedChat(updatedChat);
     dispatch(updateChat(updatedChat));
   }
 
@@ -96,7 +96,7 @@ const UpdateGroupModal: React.FC<Props> = ({
       isOpen={isOpen}
       setIsOpen={onClose}
       header="Update Group"
-      dissmissable={!imageLoading || !nameLoading}
+      dissmissable={!(imageLoading || nameLoading)}
       onDismiss={resetModal}
     >
       <div className='w-full flex flex-col items-center gap-3'>

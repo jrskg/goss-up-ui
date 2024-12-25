@@ -2,15 +2,16 @@ import Loader from '@/components/Loader';
 import SearchBar from '@/components/SearchBar';
 import SearchUserCard from '@/components/SearchUserCard';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import type { ResponseWithData, SearchedUserResponseData } from '@/interface/interface';
 import MainLayout from '@/layouts/MainLayout';
 import { setSearchResult } from '@/redux/slices/searchResult';
 import instance from '@/utils/axiosInstance';
 import { AxiosError } from 'axios';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import defaultAvatar from '../assets/defaultAvatar.jpg';
-import { useNavigate } from 'react-router-dom';
 
 const SearchUser: React.FC = () => {
   const {users: searchedData, hasMore} = useAppSelector(state => state.searchedUsers);
@@ -19,6 +20,7 @@ const SearchUser: React.FC = () => {
   const [page, setPage] = useState(1);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const [searchHappened, setSearchHappened] = useState(false);
 
   const fetchData = async (page: number) => {
     try {
@@ -47,25 +49,20 @@ const SearchUser: React.FC = () => {
     }
   };
 
-  const observer = useRef<IntersectionObserver | null>(null);
-  const lastElementRef = useCallback(
-    (node: HTMLDivElement) => {
-      if (loading) return;
-      if (observer.current) observer.current.disconnect();
-      observer.current = new IntersectionObserver(async (entries) => {
-        if (entries[0].isIntersecting && hasMore && searchQuery) {
-          setPage((prev) => prev + 1);
-          await fetchData(page + 1);
-        }
-      });
-      if (node) observer.current.observe(node);
-    },
-    [loading, hasMore, searchQuery]
-  );
+  const {setLastElement} = useInfiniteScroll({
+    isLoading: loading,
+    hasMore,
+    onLoadMore: async () => {
+      setPage((prev) => prev + 1);
+      await fetchData(page + 1);
+    }
+  })
+
   const handleSearch = useCallback(
     async () => {
       if (searchQuery) {
         setPage(1);
+        setSearchHappened(true);
         await fetchData(1);
       }
     },
@@ -86,7 +83,7 @@ const SearchUser: React.FC = () => {
         <div className="px-4 pb-5 w-[100%] md:w-[70%] xl:w-[50%] m-auto flex flex-col items-center gap-1 mt-2">
           <h1 className="text-2xl font-bold mt-2">Search Results</h1>
           {searchedData.map((user, index) => index === searchedData.length - 1 ? (
-            <div className='w-[100%]' key={user._id} ref={lastElementRef}>
+            <div className='w-[100%]' key={user._id} ref={setLastElement}>
               <SearchUserCard
                 name={user.name}
                 avatar={user.profilePic ? user.profilePic?.avatar : defaultAvatar}
@@ -107,7 +104,7 @@ const SearchUser: React.FC = () => {
           {loading && (
             <Loader />
           )}
-          {searchQuery && searchedData.length === 0 && (
+          {searchQuery && searchedData.length === 0 && searchHappened && (
             <p className='text-dark-1 dark:text-foreground mt-16 text-3xl'>No results found</p>
           )}
         </div>

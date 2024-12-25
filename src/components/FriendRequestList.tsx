@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import FriendRequestCard, { IRespondParams } from './FriendRequestCard'
 import Loader from './Loader'
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
 
 const FriendRequestList: React.FC = () => {
   const [page, setPage] = useState(1);
@@ -21,18 +22,14 @@ const FriendRequestList: React.FC = () => {
   const { respondToFriendRequest } = useFriendshipActions();
 
   const updates = useRef<boolean[]>([false, false]);
-  const observer = useRef<IntersectionObserver | null>(null);
-  const lastElementRef = useCallback((node: HTMLDivElement) => {
-    if (loading || moreLoading) return;
-    if (observer.current) observer.current.disconnect();
-    observer.current = new IntersectionObserver(async (entries) => {
-      if (entries[0].isIntersecting && hasMore) {
-        setPage(prevPage => prevPage + 1);
-        await getFriendRequests(page + 1);
-      }
-    });
-    if (node) observer.current.observe(node);
-  }, [hasMore, loading, moreLoading]);
+  const {setLastElement} = useInfiniteScroll({
+    hasMore,
+    isLoading: loading || moreLoading,
+    onLoadMore: async () => {
+      setPage(prevPage => prevPage + 1);
+      await getFriendRequests(page + 1);
+    }
+  })
 
   const getFriendRequests = async (pageNo: number) => {
     try {
@@ -117,7 +114,7 @@ const FriendRequestList: React.FC = () => {
                 {
                   friendRequests.length > 0 ? friendRequests.map((req, index) => (
                     index === friendRequests.length - 1 ? (
-                      <div ref={lastElementRef} key={req._id}>
+                      <div ref={setLastElement} key={req._id}>
                         <FriendRequestCard
                           senderId={req.sender._id}
                           senderName={req.sender.name}

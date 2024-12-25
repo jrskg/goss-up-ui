@@ -1,20 +1,34 @@
-import type { ChatType, DeliveryStatus, IAttachment, MessageType } from '@/interface/interface';
-import React, { memo } from 'react';
-import { AvatarImage, Avatar, AvatarFallback } from '../ui/avatar';
-import { getAvatarStyle, getDateStyle, getMainConatainerStyle, getMessageBoxStyle, getMessageTimestamp, getNameStyle } from '@/utils/utility';
+import type {
+  ChatType,
+  DeliveryStatus,
+  IAttachment,
+  MessageType
+} from '@/interface/chatInterface';
+import { cn } from '@/lib/utils';
+import {
+  getAvatarStyle,
+  getMainConatainerStyle,
+  getMessageBoxStyle,
+  getMessageTimestamp,
+  getNameStyle,
+  getTriangleStyle
+} from '@/utils/utility';
 import { CheckCheckIcon, CheckIcon, DownloadIcon } from 'lucide-react';
+import React, { memo } from 'react';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 interface MessageCardProps {
   senderId: string;
-  senderName?: string;
-  senderAvatar?: string;
+  senderName: string;
+  senderAvatar: string;
   prevSenderId?: string;
   loggedInUserId: string;
-  content: string;
+  content?: string;
   messgeType: MessageType;
   deliveryStatus: DeliveryStatus;
   attachments: IAttachment[];
   createdAt: string;
+  prevCreatedAt?: string;
   chatType: ChatType
 }
 const MessageCard: React.FC<MessageCardProps> = ({
@@ -28,13 +42,19 @@ const MessageCard: React.FC<MessageCardProps> = ({
   deliveryStatus,
   attachments,
   createdAt,
+  prevCreatedAt,
   chatType
 }) => {
   const renderAttachment = (attachment: IAttachment) => {
-    console.log("MessageCard rendering... "+ Math.random());
-    
+    console.log("MessageCard rendering... " + Math.random());
+
     const downloadButton = (
-      <a target='_blank' href={attachment.fileUrl} download={"newfilename"} className="p-2">
+      <a
+        target='_blank'
+        href={attachment.fileUrl}
+        download={"newfilename"}
+        className="p-2"
+      >
         <DownloadIcon className='w-6 h-6 dark:hover:text-primary-1 hover:text-[#d3d3d3]' />
       </a>
     );
@@ -43,7 +63,12 @@ const MessageCard: React.FC<MessageCardProps> = ({
       case 'image':
         return (
           <div className="relative flex flex-col items-start">
-            <img src={attachment.fileUrl} loading='lazy' alt={attachment.originalFileName} className="w-full max-h-[300px] object-cover rounded-lg" />
+            <img
+              src={attachment.fileUrl}
+              loading='lazy'
+              alt={attachment.originalFileName}
+              className="w-full max-h-[300px] object-cover rounded-lg"
+            />
             {downloadButton}
           </div>
         );
@@ -51,7 +76,7 @@ const MessageCard: React.FC<MessageCardProps> = ({
         return (
           <div className="relative flex flex-col items-start gap-2">
             <video controls className="w-full max-h-[450px] object-cover rounded-lg">
-              <source src={attachment.fileUrl} type='video/mp4'/>
+              <source src={attachment.fileUrl} type='video/mp4' />
               Your browser does not support the video tag.
             </video>
           </div>
@@ -76,51 +101,76 @@ const MessageCard: React.FC<MessageCardProps> = ({
         );
     }
   };
+  // const { time, date } = getMessageTimestamp(new Date(parseInt(createdAt)));
+  // const { date: prevDate } = getMessageTimestamp(prevCreatedAt ? new Date(parseInt(prevCreatedAt)) : undefined);
+  const { time, date } = getMessageTimestamp(new Date(createdAt));
+  const { date: prevDate } = getMessageTimestamp(prevCreatedAt ? new Date(prevCreatedAt) : undefined);
   return (
-    <div className={`relative flex w-full mb-5 ${getMainConatainerStyle(senderId, loggedInUserId)}`}>
-      <Avatar className={`w-8 h-8 ${getAvatarStyle(senderId, loggedInUserId, chatType, prevSenderId)}`}>
-        <AvatarImage className='object-cover' src={senderAvatar} />
-        <AvatarFallback>U</AvatarFallback>
-      </Avatar>
-      <div className={
-        `bg-primary-1 dark:bg-dark-3 px-3 py-2 max-w-[70%] mt-1
-        ${getMessageBoxStyle(senderId, loggedInUserId, chatType, prevSenderId)}
-      `}>
-        <p className={`font-bold text-sm  ${getNameStyle(senderId, loggedInUserId, chatType, prevSenderId)}`}>{senderName}</p>
-        {messgeType === "text" ?
-          <p className='p-1'>{content}</p> :
-          <>
-            <div className="flex flex-col justify-center items-start">
-              {
-                attachments.map((attachment) => (
-                  <div key={attachment.fileUrl} className="p-1 w-full">
-                    {renderAttachment(attachment)}
-                  </div>
-                ))
+    <>
+      {date !== prevDate &&
+        <div className='w-full flex justify-center items-center mb-2'>
+          <p className='bg-secondary text-sm dark:bg-dark-3 px-2 py-1 rounded-md font-bold font-sans'>
+            {prevDate ? prevDate : date}
+          </p>
+        </div>}
+      <div className={cn("relative flex w-full mb-[2px]", getMainConatainerStyle(senderId, loggedInUserId))}>
+        <Avatar className={cn("w-8 h-8", getAvatarStyle(senderId, loggedInUserId, chatType, prevSenderId))}>
+          <AvatarImage className='object-cover' src={senderAvatar} />
+          <AvatarFallback>U</AvatarFallback>
+        </Avatar>
+        <div className={
+          cn("z-10 relative px-2 py-1 max-w-[70%]",
+            loggedInUserId === senderId ? "bg-senderMessageColor dark:bg-senderMessageColorDark" : "bg-primary-1 dark:bg-dark-3",
+            getMessageBoxStyle(senderId, loggedInUserId, chatType, prevSenderId))
+        }>
+          <div className={
+            cn("-z-10 absolute h-0 w-0 border-l-[20px] border-t-[20px] border-r-[20px] border-l-transparent border-r-transparent top-0",
+              loggedInUserId === senderId ? "border-t-senderMessageColor dark:border-t-senderMessageColorDark" : "border-t-primary-1 dark:border-t-dark-3",
+              getTriangleStyle(senderId, loggedInUserId, prevSenderId))
+          } />
+          <p className={cn("font-bold text-sm", getNameStyle(senderId, loggedInUserId, chatType, prevSenderId))}>
+            {senderName}
+          </p>
+          <div className={cn("flex", 
+            content && content.length > 20 ? "flex-col" : "flex-row gap-2",
+            messgeType === "file" && "flex-col"
+          )}>
+            {messgeType === "text" ?
+              <p className='p-[2px] text-justify'>{content}</p> :
+              <>
+                <div className="flex flex-col justify-center items-start">
+                  {
+                    attachments.map((attachment) => (
+                      <div key={attachment.fileUrl} className="p-1 w-full">
+                        {renderAttachment(attachment)}
+                      </div>
+                    ))
+                  }
+                </div>
+                {content && <p className="p-1 pl-2">{content}</p>}
+              </>
+            }
+            <div
+              className={cn("flex gap-2 self-end items-center justify-center ")}
+            >
+              <p className='text-[13px]'>{time}</p>
+              {senderId === loggedInUserId &&
+                (() => {
+                  switch (deliveryStatus) {
+                    case "sent":
+                      return <CheckIcon className='w-5 h-5 text-[#2b2b2b] dark:text-[#d1d1d1]' />
+                    case "delivered":
+                      return <CheckCheckIcon className='w-5 h-5 text-[#2b2b2b] dark:text-[#d1d1d1]' />
+                    case "seen":
+                      return <CheckCheckIcon className='w-5 h-5 text-[#ffea31] dark:text-[#18beff]' />
+                  }
+                })()
               }
             </div>
-            {content && <p className="p-1 pl-2">{content}</p>}
-          </>
-        }
+          </div>
+        </div>
       </div>
-      <div
-        className={`absolute bottom-[-17px] flex justify-center items-center gap-1 ${getDateStyle(senderId, loggedInUserId, chatType)}`}
-      >
-        <p className='text-xs'>{getMessageTimestamp(new Date(Number(createdAt)))}</p>
-        {senderId === loggedInUserId &&
-          (() => {
-            switch (deliveryStatus) {
-              case "sent":
-                return <CheckIcon className='w-4 h-4 text-[#4b4b4b] dark:text-[#b6b6b6]' />
-              case "delivered":
-                return <CheckCheckIcon className='w-4 h-4 text-[#4b4b4b] dark:text-[#b6b6b6]' />
-              case "seen":
-                return <CheckCheckIcon className='w-4 h-4 text-[#e70000] dark:text-primary-1' />
-            }
-          })()
-        }
-      </div>
-    </div>
+    </>
   )
 }
 

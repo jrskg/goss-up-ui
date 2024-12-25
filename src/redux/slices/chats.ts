@@ -38,6 +38,13 @@ const chatSlice = createSlice({
         state.participants[key] = value;
       });
     },
+    appendToChatState(state, action: PayloadAction<IChatPayloadMultiple>) {
+      state.chats.push(...action.payload.chats);
+      const newParticipants = getMapFromParticipants(action.payload.participants);
+      Object.entries(newParticipants).forEach(([key, value]) => {
+        state.participants[key] = value;
+      });
+    },
     addParticipant(state, action: PayloadAction<Participants>) {
       const newParticipants = getMapFromParticipants(action.payload);
       Object.entries(newParticipants).forEach(([key, value]) => {
@@ -73,6 +80,7 @@ const chatSlice = createSlice({
 export const { 
   setChatState, 
   addToChatState, 
+  appendToChatState,
   addParticipant, 
   removeChat, 
   updateChat ,

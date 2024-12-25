@@ -9,13 +9,14 @@ import { toast } from "sonner";
 import { useAppDispatch } from "./hooks";
 import { useLocalStorageForRoute } from "./useLocalStorage";
 import { toggleDarkMode } from "@/utils/utility";
+import { useSocket } from "@/context/socketContext";
 
 export const useAuthActions = () => {
   const [loading, setLoading] = useState(false);
-  // const { checkConnection } = useConnection();
   const dispatch = useAppDispatch();
   const {setVerificationAccess, removeRouteItem} = useLocalStorageForRoute();
   const navigate = useNavigate();
+  const {reconnectSocket, socket} = useSocket();
 
   const register = async (formBody: { name: string, email: string, password: string }): Promise<void> => {
     try {
@@ -57,6 +58,7 @@ export const useAuthActions = () => {
       const { data } = await instance.post<LoginResponse>("/user/login", formBody);
       if (data.success) {
         if (!("beginVerification" in data.data)){
+          reconnectSocket();
           dispatch(setUser(data.data));
           removeRouteItem("isVerificationAccessible");
           removeRouteItem("isStepperAccessible");
@@ -107,6 +109,7 @@ export const useAuthActions = () => {
       if (data.success) {
         toast.success(data.message);
         dispatch({ type: RESET });
+        if(socket) socket.disconnect();
       }
     } catch (error) {
       if (error instanceof AxiosError && error.response) {

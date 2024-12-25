@@ -82,8 +82,21 @@ export default {
           5: "#7b7971",
           6: "#94938c",
         },
+        senderMessageColor:"#cc88e7",
+        senderMessageColorDark:"#72378b",
+      },
+      animation: {
+        smoothBounce: 'smoothBounce 1.3s linear infinite',
+      },
+      keyframes: {
+        smoothBounce: {
+          '0%, 60%, 100%': { transform: 'translateY(0)' },
+          '30%': { transform: 'translateY(-6px)' },
+        },
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    require("tailwindcss-animate"),
+  ],
 };

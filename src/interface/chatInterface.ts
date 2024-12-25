@@ -11,7 +11,7 @@ export interface IAttachment{
   originalFileName: string;
   size: number;
 }
-export interface IMessageCard{
+export interface IMessage{
   _id: string;
   chatId: string;
   senderId: string;

@@ -4,6 +4,7 @@ import defaultImage from "../../assets/defaultAvatar.jpg";
 import Loader from '../Loader';
 import SearchBar from '../SearchBar';
 import FriendCardSimple from './FriendCardSimple';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 
 interface Props {
   onFriendClick: (userId: string, name: string) => void
@@ -24,21 +25,16 @@ const FriendSelector: React.FC<Props> = ({
     clearSearchResult
   } = useGetAndSearchFriends();
 
-  const observer = useRef<IntersectionObserver | null>(null);
-  const lastFriendElementRef = useCallback(
-    (node: HTMLDivElement) => {
-      if (mainLoading || moreLoading) return;
-      if (observer.current) observer.current.disconnect();
-      observer.current = new IntersectionObserver(async (entries) => {
-        if (entries[0].isIntersecting && searchedHasMore) {
-          setSearchedPage(prev => prev + 1);
-          await searchInFriends(searchedPage + 1, searchQuery);
-        }
-      });
-      if (node) observer.current.observe(node);
-    },
-    [searchedHasMore, mainLoading, moreLoading],
-  )
+  const rootElement = useRef<HTMLDivElement | null>(null);
+  const {setLastElement} = useInfiniteScroll({
+    root: rootElement.current,
+    hasMore: searchedHasMore,
+    isLoading: mainLoading || moreLoading,
+    onLoadMore: async () => {
+      setSearchedPage(searchedPage + 1);
+      await searchInFriends(searchedPage + 1, searchQuery);
+    }
+  })
 
   const handleCardClick = useCallback((userId: string, name: string) => {
     onFriendClick(userId, name);
@@ -49,11 +45,11 @@ const FriendSelector: React.FC<Props> = ({
       getFriends(1);
     }
   }, []);
-
+  
   useEffect(() => {
     const timeout = setTimeout(async () => {
+      setSearchedPage(1);
       if (!searchQuery.trim()) {
-        setSearchedPage(1);
         clearSearchResult();
         return;
       }
@@ -75,27 +71,38 @@ const FriendSelector: React.FC<Props> = ({
         mainLoading ? (
           <Loader className='mt-36' />
         ) : (
-          <div className='overflow-y-scroll absolute bottom-0 top-[50px] w-full py-1'>
+          <div className='overflow-y-scroll absolute bottom-0 top-[50px] w-full py-1' ref={rootElement}>
             {
-              (searchQuery.length === 0 ? friends : searchedFriends).map((f, i) => i === friends.length - 1 ? (
-                <div key={f._id} ref={lastFriendElementRef}>
+              searchQuery.length > 0 ? (
+                searchedFriends.map((f, i) => i === searchedFriends.length - 1 ? (
+                  <div key={f._id} ref={setLastElement}>
+                    <FriendCardSimple
+                      avatar={f.friend.profilePic?.avatar || defaultImage}
+                      name={f.friend.name}
+                      userId={f.friend._id}
+                      onClick={handleCardClick}
+                    />
+                  </div>
+                ) : (
                   <FriendCardSimple
+                    key={f._id}
                     avatar={f.friend.profilePic?.avatar || defaultImage}
                     name={f.friend.name}
                     userId={f.friend._id}
                     onClick={handleCardClick}
                   />
-                </div>
+                ))
               ) : (
-                <div key={f._id}>
+                friends.map(f => (
                   <FriendCardSimple
+                    key={f._id}
                     avatar={f.friend.profilePic?.avatar || defaultImage}
                     name={f.friend.name}
                     userId={f.friend._id}
                     onClick={handleCardClick}
                   />
-                </div>
-              ))
+                ))
+              )
             }
             {
               moreLoading && (

@@ -32,7 +32,7 @@ const MyDialog: React.FC<MyDialogProps> = ({
 }) => {
   const handleClose = (open: boolean) => {
     if(!dissmissable){
-      toast.error("Wait a second...")
+      toast.warning("Wait a second...")
       return;
     }
     setIsOpen(open);
