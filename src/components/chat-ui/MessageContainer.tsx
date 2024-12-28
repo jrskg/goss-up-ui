@@ -5,6 +5,8 @@ import defaultAvatar from "../../assets/defaultAvatar.jpg";
 import smiley from "../../assets/smiley2.gif";
 import MessageCard from './MessageCard';
 import { cn } from '@/lib/utils';
+import { useSocket } from '@/context/socketContext';
+import { SOCKET_EVENTS } from '@/utils/constants';
 
 interface MessageContainerProps {
   selectedChatId: string;
@@ -19,11 +21,38 @@ const MessageContainer: React.FC<MessageContainerProps> = ({
   participants
 }) => {
   console.log("MessageContainer rendering... " + Math.random());
-  const [typingUsers, setTypingUsers] = useState<string[]>(["User1", "User2"]);
+  const [typingUsers, setTypingUsers] = useState<{userId: string, name: string}[]>([]);
   const scrollableContainerRef = useRef<HTMLDivElement | null>(null);
 
   const allMessages = useContext(MessagesContext)!;
   const { newMessages, seenMessages, seenMessagesIds, newMessagesIds } = allMessages[selectedChatId];
+
+  const {socket} = useSocket();
+
+  useEffect(() => {
+    if(!socket) return;
+    socket.on(SOCKET_EVENTS.USER_TYPING, ({roomId, name, userId}) => {
+      console.log("User typing...", Math.round(Math.random() * 100));
+      if(roomId === selectedChatId){
+        setTypingUsers(prev => {
+          if(prev.find(u => u.userId === userId)) return prev;
+          return [...prev, {userId, name}]
+        })
+      }
+    });
+    socket.on(SOCKET_EVENTS.USER_STOP_TYPING, ({roomId, userId}) => {
+      console.log("User stopped typing...", Math.round(Math.random() * 100));
+      if(roomId === selectedChatId){
+        setTypingUsers(prev => prev.filter(u => u.userId !== userId));
+      }
+    });
+
+    return () => {
+      socket.off(SOCKET_EVENTS.USER_TYPING);
+      socket.off(SOCKET_EVENTS.USER_STOP_TYPING);
+    }
+  }, [socket, selectedChatId]);
+  
 
   useEffect(() => {
     if (scrollableContainerRef.current) {
@@ -49,12 +78,11 @@ const MessageContainer: React.FC<MessageContainerProps> = ({
     </>
   );
   const getTypingString = () => {
-    console.log("running again and again");
-
     const length = typingUsers.length;
-    if (length === 1) return `${typingUsers[0]} is typing`;
-    if (length === 2) return `${typingUsers.join(" and ")} are typing`;
-    if (length > 2) return `${typingUsers.slice(0, 2).join(", ")} and ${length - 2} more are typing`;
+    const typingUsersName = typingUsers.map(u => u.name);
+    if (length === 1) return `${typingUsersName[0]} is typing`;
+    if (length === 2) return `${typingUsersName.join(" and ")} are typing`;
+    if (length > 2) return `${typingUsersName.slice(0, 2).join(", ")} and ${length - 2} more are typing`;
     return "";
   }
 
@@ -62,7 +90,7 @@ const MessageContainer: React.FC<MessageContainerProps> = ({
     <div ref={scrollableContainerRef} className='absolute top-[65px] bottom-[90px] w-full overflow-auto p-2'>
       {
         (seenMessagesIds.length <= 0 && newMessagesIds.length <= 0) ? (
-          <div className='w-full h-[80%] flex flex-col items-center justify-center gap-5'>
+          <div className='w-full h-[93%] flex flex-col items-center justify-center gap-5'>
             <img
               className='w-44'
               loading='lazy'

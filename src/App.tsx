@@ -13,6 +13,7 @@ import Signup from './pages/Signup';
 import { useAuthActions } from './hooks/userHooks';
 import { onMessage } from 'firebase/messaging';
 import { messaging } from './notifications/firebase';
+import { useGlobalSocketListeners } from './hooks/useGlobalSocketListeners';
 
 const Profile = React.lazy(() => import('./pages/Profile'));
 const Notifications = React.lazy(() => import('./pages/Notifications'));
@@ -27,17 +28,23 @@ const SearchUser = React.lazy(() => import('./pages/SearchUser'));
 const UserProfile = React.lazy(() => import('./pages/UserProfile'));
 
 function App() {
+  const { isAuthenticated, user } = useAppSelector(state => state.user);
+  const { isDetailsOn, selectedChat } = useAppSelector((state) => state.selectedChat);
+  const { chats, participants } = useAppSelector((state) => state.chats);
+  const { messages } = useAppSelector((state) => state.messages);
+  const { loadUser, loading } = useAuthActions();
+
+  useGlobalSocketListeners(selectedChat, user);
+
   useEffect(() => {
     onMessage(messaging, (payload) => {
       console.log("Message received. ", payload);
     })
   }, [])
-  const { isAuthenticated } = useAppSelector(state => state.user);
-  const {loadUser, loading} = useAuthActions();
 
   useEffect(() => {
     (async () => {
-      if(location.pathname.includes("/verify") || location.pathname.includes("/password/reset")) return;
+      if (location.pathname.includes("/verify") || location.pathname.includes("/password/reset")) return;
       if (isAuthenticated) return;
       await loadUser();
     })()
@@ -51,7 +58,14 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path='/forget-password' element={<Suspense fallback={<TopLoader />}><ForgetPassword /></Suspense>} />
         <Route element={<ProtectedRoute />}>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<Home
+            user={user} 
+            chats={chats}
+            isDetailsOn={isDetailsOn}
+            messages={messages}
+            participants={participants}
+            selectedChat={selectedChat}
+          />} />
           <Route path="/profile" element={<Suspense fallback={<TopLoader />}><Profile /></Suspense>} />
           <Route path="/notifications" element={<Suspense fallback={<TopLoader />}><Notifications /></Suspense>} />
           <Route path="/friends" element={<Suspense fallback={<TopLoader />}><Friends /></Suspense>} />

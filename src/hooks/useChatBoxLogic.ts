@@ -1,34 +1,41 @@
-import { IChat, IMessage } from "@/interface/chatInterface";
-import { useEffect, useState } from "react";
-import { useAppDispatch } from "./hooks";
-import { v4 as uuid } from "uuid"
-import { addToNewMessages, addToSeenMessages } from "@/redux/slices/messages";
 import { useSocket } from "@/context/socketContext";
+import { IChat, IMessage } from "@/interface/chatInterface";
+import { addToSeenMessages } from "@/redux/slices/messages";
 import { SOCKET_EVENTS } from "@/utils/constants";
-import { toast } from "sonner";
+import { throttle } from "@/utils/utility";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { v4 as uuid } from "uuid";
+import { useAppDispatch } from "./hooks";
 
-export const useChatBoxLogic = (selectedChat:IChat | null, userId:string) => {
+export const useChatBoxLogic = (selectedChat:IChat | null, userId:string, userName:string) => {
   const [userMessage, setUserMessage] = useState("");
   const dispatch = useAppDispatch();
   const {socket} = useSocket();
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const emitTypingEvents = useCallback(throttle(()=> {
+    if(!socket || !selectedChat) return;
+    const roomId = selectedChat._id;
+    socket.emit(SOCKET_EVENTS.USER_TYPING, {name: userName, userId, roomId});
+  }, 1500), [socket, selectedChat, userName, userId]);
 
   useEffect(() => {
-    if(!socket) return;
-    socket.on(SOCKET_EVENTS.NEW_MESSAGE, (payload) => {
-      const {message, roomId} = payload;
-      if(!selectedChat || roomId !== selectedChat._id){
-        console.log("I am running");
-        toast.success("New message received");
-        dispatch(addToNewMessages({chatId: roomId, message}));
-      }else{
-        dispatch(addToSeenMessages({chatId: roomId, message}));
-      }
-    });
+    setUserMessage("");
+  }, [selectedChat, setUserMessage]);
+  
 
-    return () => {
-      socket.off(SOCKET_EVENTS.NEW_MESSAGE);
+  const handleInputMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setUserMessage(e.target.value);
+    emitTypingEvents();
+    if(typingTimeoutRef.current){
+      clearTimeout(typingTimeoutRef.current);
     }
-  }, [socket, selectedChat, dispatch]);
+    typingTimeoutRef.current = setTimeout(() => {
+      if(!socket || !selectedChat) return;
+      const roomId = selectedChat._id;
+      socket.emit(SOCKET_EVENTS.USER_STOP_TYPING, {userId, roomId, name: userName});
+    }, 2000)
+  }
   
   const handleSendMessage = () => {
     if(!selectedChat) return;
@@ -45,6 +52,7 @@ export const useChatBoxLogic = (selectedChat:IChat | null, userId:string) => {
       deliveryStatus: "sent"
     }
     if(!socket) return
+    if(typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     socket.emit(SOCKET_EVENTS.SEND_MESSAGE, {roomId, message, participants, senderId: userId});
     dispatch(addToSeenMessages({ chatId: roomId, message }));
     setUserMessage("");
@@ -52,8 +60,8 @@ export const useChatBoxLogic = (selectedChat:IChat | null, userId:string) => {
 
   return {
     userMessage,
-    setUserMessage,
     handleSendMessage,
-    dispatch
+    dispatch,
+    handleInputMessageChange
   }
 }

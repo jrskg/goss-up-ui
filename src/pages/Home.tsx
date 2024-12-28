@@ -1,16 +1,36 @@
 import ChatBox from "@/components/chat-ui/ChatBox";
 import ChatDetails from "@/components/chat-ui/ChatDetails";
 import ChatList from "@/components/chat-ui/ChatList";
-import { ChatsContext, LoggedInUserContext, MessagesContext, ParticipantsContext, SelectedChatContext } from "@/context/contexts";
-import { useAppSelector } from "@/hooks/hooks";
+import { 
+  ChatsContext, 
+  LoggedInUserContext, 
+  MessagesContext, 
+  ParticipantsContext, 
+  SelectedChatContext 
+} from "@/context/contexts";
+import type { IChat, ParticipantsMap } from "@/interface/chatInterface";
+import type { IUser } from "@/interface/interface";
 import MainLayout from "@/layouts/MainLayout";
-import { useEffect, useState } from "react";
+import { Messages } from "@/redux/slices/messages";
+import React, { useEffect, useState } from "react";
 
-const Home = () => {
-  const { isDetailsOn, selectedChat } = useAppSelector((state) => state.selectedChat);
-  const { chats, participants } = useAppSelector((state) => state.chats);
-  const { messages } = useAppSelector((state) => state.messages);
-  const { user } = useAppSelector((state) => state.user);
+interface HomeProps {
+  user:IUser | null;
+  isDetailsOn:boolean;
+  selectedChat:IChat | null;
+  chats:IChat[];
+  participants:ParticipantsMap;
+  messages:Messages
+}
+const Home:React.FC<HomeProps> = ({
+  chats,
+  isDetailsOn,
+  messages,
+  participants,
+  selectedChat,
+  user
+}) => {
+  
   const [screenSize, setScreenSize] = useState<string>("large");
 
   useEffect(() => {

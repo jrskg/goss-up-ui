@@ -6,12 +6,12 @@ import { setIsDetailsOn } from '@/redux/slices/selectedChat'
 import { AvatarImage } from '@radix-ui/react-avatar'
 import { FileAudioIcon, FileTextIcon, FileVideoIcon, ImageIcon, MessageCircleMoreIcon, PaperclipIcon, SendHorizonalIcon, XIcon } from 'lucide-react'
 import React, { memo, useContext, useState } from 'react'
+import { toast } from 'sonner'
+import MenuItem from '../MenuItem'
+import PopupMenu from '../PopupMenu'
 import { Avatar } from '../ui/avatar'
 import { Textarea } from '../ui/textarea'
 import MessageContainer from './MessageContainer'
-import PopupMenu from '../PopupMenu'
-import MenuItem from '../MenuItem'
-import { toast } from 'sonner'
 
 const menuItemData = [
   {
@@ -48,17 +48,17 @@ const ChatBox: React.FC<ChatBoxProps> = ({
   console.log("CHAT BOX rendering... chatbox" + Math.random());
   const [popupVisible, setPopupVisible] = useState(false);
 
-  const { _id: userId } = useContext(LoggedInUserContext)!;
+  const { _id: userId, name: userName } = useContext(LoggedInUserContext)!;
   const participants = useContext(ParticipantsContext)!;
   const selectedChat = useContext(SelectedChatContext);
   const { getChatAvatar, getChatName } = useGetParticipantsInfo(participants, userId);
   const handleSelectedChat = useSetSelectedChat();
   const {
     handleSendMessage,
-    setUserMessage,
     userMessage,
-    dispatch
-  } = useChatBoxLogic(selectedChat, userId);
+    dispatch,
+    handleInputMessageChange
+  } = useChatBoxLogic(selectedChat, userId, userName);
 
   const handleCloseChat = (e: React.MouseEvent<SVGSVGElement, MouseEvent>) => {
     e.stopPropagation();
@@ -89,7 +89,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
               <p className='text-xl font-bold leading-none'>{getChatName(selectedChat)}</p>
               {/* <p className='text-sm'>Status</p> */}
             </div>
-            <XIcon onClick={handleCloseChat} className='absolute right-3 w-6 h-6 cursor-pointer md:hidden' />
+            <XIcon onClick={handleCloseChat} className='absolute right-3 w-6 h-6 cursor-pointer ' />
           </div>
           <MessageContainer
             selectedChatId={selectedChat._id}
@@ -120,7 +120,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
               rows={2} className='resize-none w-[80%] text-md bg-primary-6 dark:bg-dark-1'
               placeholder='Type a message'
               value={userMessage}
-              onChange={(e) => setUserMessage(e.target.value)}
+              onChange={handleInputMessageChange}
               onKeyDown={handleKeyDown}
             />
             <div className='flex justify-center items-center bg-primary-6 dark:bg-primary-1 p-2 md:p-3 rounded-full'>

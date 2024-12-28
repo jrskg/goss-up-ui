@@ -44,13 +44,13 @@ const getDateStr = (createdAt: string) => {
   return Math.floor(diffDays / 7) + " weeks ago";
 }
 
-const getMessageTimestamp = (date?: Date):{time: string, date?: string} => {
+const getMessageTimestamp = (date?: Date): { time: string, date?: string } => {
   if (!date) {
-    return {time: "", date: ""};
+    return { time: "", date: "" };
   }
   const now = new Date();
   if (isSameDay(date, now)) {
-    return {time: format(date, 'p'), date:"Today"}; // "10:45 AM"
+    return { time: format(date, 'p'), date: "Today" }; // "10:45 AM"
   }
   if (isSameDay(date, subDays(now, 1))) {
     // return `Yesterday, ${format(date, 'p')}`; // "Yesterday, 9:30 PM"
@@ -68,7 +68,7 @@ const getMessageTimestamp = (date?: Date):{time: string, date?: string} => {
   }
   if (isSameYear(date, now)) {
     // return format(date, 'd MMM, p'); // "11 Jun, 5:00 PM"
-    return{
+    return {
       time: format(date, 'p'),
       date: format(date, 'd MMM')
     }
@@ -111,7 +111,7 @@ const getMessageBoxStyle = (sId: string, lguId: string, chType: ChatType, psId?:
 const getTriangleStyle = (sId: string, lguId: string, psId?: string): string => {
   if (sId === lguId) {
     return sId === psId ? "hidden" : "-right-3";
-  } 
+  }
   return sId === psId ? "hidden" : "-left-3";
 }
 
@@ -141,23 +141,35 @@ const getLastMessageText = (lastMessage?: ILastMessage): string => {
   return "Sent an attachment";
 }
 
-const getMapFromParticipants = (participants:Participants): ParticipantsMap => {
-  const map:ParticipantsMap = {};
+const getMapFromParticipants = (participants: Participants): ParticipantsMap => {
+  const map: ParticipantsMap = {};
   participants.forEach(p => map[p._id] = p);
   return map;
 }
 
+function throttle(func: Function, limit: number) {
+  let lastCall = 0;
+  return function (...args: any) {
+    const now = new Date().getTime();
+    if (now - lastCall >= limit) {
+      lastCall = now;
+      func(...args);
+    }
+  }
+}
+
 export {
   getAvatarStyle,
-  getDateStr, 
+  getDateStr,
   getDateStyle,
-  getLastMessageText, 
-  getMainConatainerStyle, 
-  getMapFromParticipants, 
-  getMessageBoxStyle, 
-  getMessageTimestamp, 
-  getNameStyle, 
+  getLastMessageText,
+  getMainConatainerStyle,
+  getMapFromParticipants,
+  getMessageBoxStyle,
+  getMessageTimestamp,
+  getNameStyle,
   toggleDarkMode,
-  getTriangleStyle
+  getTriangleStyle,
+  throttle
 };
 
