@@ -82,21 +82,42 @@ export default {
           5: "#7b7971",
           6: "#94938c",
         },
-        senderMessageColor:"#cc88e7",
-        senderMessageColorDark:"#72378b",
+        senderMessageColor: "#cc88e7",
+        senderMessageColorDark: "#72378b",
+        document: {
+          light: "#d400c6",
+          dark: "#d96ad1",
+        },
+        image: {
+          light: "#ff0040",
+          dark: "#de7a93",
+        },
+        video: {
+          light: "#4b0380",
+          dark: "#ae66e3",
+        },
+        audio: {
+          light: "#055e00",
+          dark: "#8beb88",
+        },
       },
       animation: {
-        smoothBounce: 'smoothBounce 1.3s linear infinite',
+        smoothBounce: "smoothBounce 1.3s linear infinite",
+        'spin-slow': 'spin 10s linear infinite',
+        'glow-pulse': 'glow-pulse 2s infinite',
       },
       keyframes: {
         smoothBounce: {
-          '0%, 60%, 100%': { transform: 'translateY(0)' },
-          '30%': { transform: 'translateY(-6px)' },
+          "0%, 60%, 100%": { transform: "translateY(0)" },
+          "30%": { transform: "translateY(-6px)" },
         },
+        'glow-pulse': {
+          '0%, 100%': { opacity: 0.8, transform: 'scale(1)' },
+          '50%': { opacity: 1, transform: 'scale(1.05)' },
+        },
+
       },
     },
   },
-  plugins: [
-    require("tailwindcss-animate"),
-  ],
+  plugins: [require("tailwindcss-animate")],
 };

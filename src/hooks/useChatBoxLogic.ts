@@ -1,6 +1,6 @@
 import { useSocket } from "@/context/socketContext";
 import { IChat, IMessage } from "@/interface/chatInterface";
-import { addToSeenMessages } from "@/redux/slices/messages";
+import { addToSeenMessages, transferNewToSeen } from "@/redux/slices/messages";
 import { SOCKET_EVENTS } from "@/utils/constants";
 import { throttle } from "@/utils/utility";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -23,7 +23,6 @@ export const useChatBoxLogic = (selectedChat:IChat | null, userId:string, userNa
     setUserMessage("");
   }, [selectedChat, setUserMessage]);
   
-
   const handleInputMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setUserMessage(e.target.value);
     emitTypingEvents();
@@ -54,6 +53,7 @@ export const useChatBoxLogic = (selectedChat:IChat | null, userId:string, userNa
     if(!socket) return
     if(typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     socket.emit(SOCKET_EVENTS.SEND_MESSAGE, {roomId, message, participants, senderId: userId});
+    dispatch(transferNewToSeen(roomId));
     dispatch(addToSeenMessages({ chatId: roomId, message }));
     setUserMessage("");
   }

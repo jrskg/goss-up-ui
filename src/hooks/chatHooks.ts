@@ -13,7 +13,7 @@ import { useSelectedChatRef } from "@/context/selectedChatRefContext";
 import { useSocket } from "@/context/socketContext";
 import { setSelectedChat } from "@/redux/slices/selectedChat";
 import { SOCKET_EVENTS } from "@/utils/constants";
-import { initilizeMessagesTemp } from "@/redux/slices/messages";
+import { initilizeMessagesTemp, transferNewToSeen } from "@/redux/slices/messages";
 
 type ChatReturn = {
   chat: IChat,
@@ -37,6 +37,7 @@ const useSetSelectedChat = () => {
         roomId: selectedChatRef.current?._id!
       })
     }
+    if(selectedChatRef.current) dispatch(transferNewToSeen(selectedChatRef.current._id));
     dispatch(setSelectedChat(chat));
     selectedChatRef.current = chat;
   }
@@ -44,7 +45,7 @@ const useSetSelectedChat = () => {
   return handleSelectedChat
 }
 
-const useGetAllChats = (chats: IChat[], rootElement:React.MutableRefObject<HTMLDivElement | null>) => {
+const useGetAllChats = (orderedChatIds:string[], rootElement:React.MutableRefObject<HTMLDivElement | null>) => {
   const [loading, setLoading] = useState(false);
   const [moreLoading, setMoreLoading] = useState(false);
   const dispatch = useAppDispatch();
@@ -83,7 +84,7 @@ const useGetAllChats = (chats: IChat[], rootElement:React.MutableRefObject<HTMLD
     }
   }
   useEffect(() => {
-    if (chats.length === 0) getAllChats(1);
+    if (orderedChatIds.length === 0) getAllChats(1);
   }, []);
 
   return {
@@ -129,9 +130,14 @@ const useGetParticipantsInfo = (participants: ParticipantsMap, userId: string) =
 
 const useChatActions = (loggedInUserId: string) => {
   const [loading, setLoading] = useState(false);
-  const chats = useContext(ChatsContext)!;
+  const {chatMap, orderedChatIds} = useContext(ChatsContext)!;
   const createOneToOneChat = async (userId: string): Promise<ChatReturn> => {
-    const chat = chats.find(ch => (ch.chatType === "one-to-one" && ch.participants.includes(userId) && ch.participants.includes(loggedInUserId)));
+    const chatId = orderedChatIds.find(chid => {
+      const ch = chatMap[chid];
+      return (ch.chatType === "one-to-one" && ch.participants.includes(userId) && ch.participants.includes(loggedInUserId))
+    });
+    const chat = chatId ? chatMap[chatId] : null;
+
     if (chat) {
       return {
         chat,
@@ -206,7 +212,7 @@ const useChatActions = (loggedInUserId: string) => {
     removeFromGroup,
     loading,
     createOneToOneChat,
-    chats,
+    chatMap,
     leaveGroup
   }
 }
@@ -278,7 +284,6 @@ const useUpdateGroupChat = (groupId: string) => {
           const progress = progressEvent.total
             ? Math.round((progressEvent.loaded * 100) / progressEvent.total) 
             : 0;
-          console.log(progress);
           setUploadPercentage(progress);
         }
       });

@@ -35,7 +35,7 @@ const ChatCard: React.FC<ChatCardProps> = ({
         </Avatar>
         <div>
           <p className='text-lg font-bold'>{chatName}</p>
-          {newMessageCount > 0 ? <p className='text-sm text-green-800 dark:text-success font-bold'>{newMessageCount} New Messages</p> : lastMessage && <p className='text-sm'>{"lastMessage"}</p>}
+          {newMessageCount > 0 ? <p className='text-sm text-green-800 dark:text-success font-bold'>{newMessageCount} New Messages</p> : lastMessage && <p className='text-sm'>{lastMessage}</p>}
         </div>
       </div>
       <div>

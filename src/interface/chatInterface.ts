@@ -53,6 +53,7 @@ export interface OneToOneChat extends BaseChat {
 
 export type Participants = IUserShortWithBio[];
 export type ParticipantsMap = Record<string, IUserShortWithBio>;
+export type ChatMap = Record<string, IChat>;
 
 export interface IGetChatsResponse{
   hasMore: boolean;

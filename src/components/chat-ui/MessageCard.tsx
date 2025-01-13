@@ -45,9 +45,8 @@ const MessageCard: React.FC<MessageCardProps> = ({
   prevCreatedAt,
   chatType
 }) => {
+  console.log("MessageCard rendering... " + Math.random());
   const renderAttachment = (attachment: IAttachment) => {
-    console.log("MessageCard rendering... " + Math.random());
-
     const downloadButton = (
       <a
         target='_blank'

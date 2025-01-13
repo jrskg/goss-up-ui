@@ -29,11 +29,12 @@ const ChatList: React.FC<ChatListProps> = ({
   const [searchGroupChatOpen, setSearchGroupChatOpen] = useState(false);
 
   const { _id: userId } = useContext(LoggedInUserContext)!;
-  const chats = useContext(ChatsContext)!;
+  const { chatMap, orderedChatIds } = useContext(ChatsContext)!;
   const messages = useContext(MessagesContext)!;
   const groupChats = useMemo(() => {
-    return chats.filter(c => c.chatType === "group");
-  }, [chats]);
+    console.log("Calculating groupChats..." + Math.random());
+    return Object.values(chatMap).filter(c => c.chatType === "group");
+  }, [orderedChatIds.length]);
 
   const participants = useContext(ParticipantsContext)!;
   const selectedChat = useContext(SelectedChatContext);
@@ -50,7 +51,7 @@ const ChatList: React.FC<ChatListProps> = ({
     loading,
     moreLoading,
     setLastElement
-  } = useGetAllChats(chats, rootElementRef);
+  } = useGetAllChats(orderedChatIds, rootElementRef);
 
   const handleSearchBarFocus = () => {
     if (selectedTab === "group") setSearchGroupChatOpen(true);
@@ -118,7 +119,7 @@ const ChatList: React.FC<ChatListProps> = ({
             (() => {
               switch (selectedTab) {
                 case "all":
-                  if (chats.length === 0) {
+                  if (orderedChatIds.length === 0) {
                     return <InfoWrapper className='gap-2'>
                       <p className='text-2xl'>No Chats Available</p>
                       <Button
@@ -127,33 +128,35 @@ const ChatList: React.FC<ChatListProps> = ({
                       > <PlusIcon />Start a Chat</Button>
                     </InfoWrapper>
                   }
-                  return chats.map((ch, i) => i === chats.length - 1 ? (
-                    <div key={ch._id} ref={setLastElement}>
+                  return orderedChatIds.map((chid, i) => {
+                    const ch = chatMap[chid];
+                    return i === orderedChatIds.length - 1 ?
+                      <div key={ch._id} ref={setLastElement}>
+                        <ChatCard
+                          key={ch._id}
+                          avatar={getChatAvatar(ch)}
+                          chatName={getChatName(ch)}
+                          lastMessage={getLastMessageText(ch.lastMessageId)}
+                          lastMessageTime={ch.lastMessageId && getMessageTimestamp(new Date(ch.updatedAt)).time}
+                          chat={ch}
+                          onChatClick={handleChatClick}
+                          isChatSelected={ch._id === selectedChat?._id}
+                          newMessageCount={messages[ch._id].newMessagesIds.length}
+                        />
+                      </div>
+                      :
                       <ChatCard
                         key={ch._id}
                         avatar={getChatAvatar(ch)}
                         chatName={getChatName(ch)}
                         lastMessage={getLastMessageText(ch.lastMessageId)}
-                        lastMessageTime={ch.lastMessageId && getMessageTimestamp(new Date(ch.updatedAt))}
+                        lastMessageTime={ch.lastMessageId && getMessageTimestamp(new Date(ch.updatedAt)).time}
                         chat={ch}
                         onChatClick={handleChatClick}
                         isChatSelected={ch._id === selectedChat?._id}
                         newMessageCount={messages[ch._id].newMessagesIds.length}
                       />
-                    </div>
-                  ) : (
-                    <ChatCard
-                      key={ch._id}
-                      avatar={getChatAvatar(ch)}
-                      chatName={getChatName(ch)}
-                      lastMessage={getLastMessageText(ch.lastMessageId)}
-                      lastMessageTime={ch.lastMessageId && getMessageTimestamp(new Date(ch.updatedAt))}
-                      chat={ch}
-                      onChatClick={handleChatClick}
-                      isChatSelected={ch._id === selectedChat?._id}
-                      newMessageCount={messages[ch._id].newMessagesIds.length}
-                    />
-                  ))
+                  })
                 case "group":
                   if (groupChats.length === 0) {
                     return <InfoWrapper className='gap-2'>
@@ -169,7 +172,7 @@ const ChatList: React.FC<ChatListProps> = ({
                     avatar={getChatAvatar(ch)}
                     chatName={getChatName(ch)}
                     lastMessage={getLastMessageText(ch.lastMessageId)}
-                    lastMessageTime={ch.lastMessageId && getMessageTimestamp(new Date(ch.updatedAt))}
+                    lastMessageTime={ch.lastMessageId && getMessageTimestamp(new Date(ch.updatedAt)).time}
                     chat={ch}
                     onChatClick={handleChatClick}
                     isChatSelected={ch._id === selectedChat?._id}

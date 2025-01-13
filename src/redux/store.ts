@@ -9,6 +9,7 @@ import friendsReducer from "./slices/friends";
 import chatsReducer from "./slices/chats";
 import selectedChatReducer from "./slices/selectedChat";
 import messagesReducer from "./slices/messages";
+import selectedAttachmentReducer from "./slices/selectedAttachment";
 
 const appReducer = combineReducers({
   user: userReducer,
@@ -19,7 +20,8 @@ const appReducer = combineReducers({
   friends: friendsReducer,
   chats:chatsReducer,
   selectedChat:selectedChatReducer,
-  messages:messagesReducer
+  messages:messagesReducer,
+  selectedAttachment:selectedAttachmentReducer
 });
 
 const rootReducer = (state: ReturnType<typeof appReducer> | undefined, action: Action) => {

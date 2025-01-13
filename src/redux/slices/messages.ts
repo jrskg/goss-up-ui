@@ -1,5 +1,7 @@
-import { IMessage } from "@/interface/chatInterface";
+import { IChat, IMessage } from "@/interface/chatInterface";
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
+import { addToChatState, appendToChatState } from "./chats";
+import { IMessageStatusUpdatePayload } from "@/interface/socketEvents";
 
 interface IChatMessages{
   seenMessages: Record<string, IMessage>;
@@ -13,6 +15,19 @@ interface IMessagesState {
 }
 const initialState:IMessagesState = {
   messages:{}
+}
+
+const initilizeMessage = (state:IMessagesState, chats:IChat[]) => {
+  chats.forEach(chat => {
+    if(!state.messages[chat._id]){
+      state.messages[chat._id] = {
+        seenMessages: {},
+        newMessages: {},
+        seenMessagesIds: [],
+        newMessagesIds: []
+      }
+    }
+  })
 }
 
 const messagesSlice = createSlice({
@@ -36,7 +51,7 @@ const messagesSlice = createSlice({
     transferNewToSeen:(state, action:PayloadAction<string>) => {
       const chatId = action.payload;
       const chatMessages = state.messages[chatId];
-      if(chatMessages){
+      if(chatMessages && chatMessages.newMessagesIds.length > 0){
         Object.keys(chatMessages.newMessages).forEach(key => {
           chatMessages.seenMessages[key] = chatMessages.newMessages[key];
         })
@@ -60,8 +75,26 @@ const messagesSlice = createSlice({
         chatMessages.newMessages[message._id] = message;
         chatMessages.newMessagesIds.push(message._id);
       }
+    },
+    updateMessageStatus:(state, action:PayloadAction<IMessageStatusUpdatePayload[]>) => {
+      action.payload.forEach(({messageId, roomId, status}) => {
+        const message = state.messages[roomId].seenMessages[messageId];
+        if(message){
+          message.deliveryStatus = status;
+        }
+      })
     }
-  }
+  },
+  extraReducers:(builder) => {
+    builder.addCase(addToChatState, (state, action) => {
+      const chats = action.payload.chats;
+      initilizeMessage(state, chats);
+    })
+    .addCase(appendToChatState, (state, action) => {
+      const chats = action.payload.chats;
+      initilizeMessage(state, chats);
+    })
+  },
 });
 
 export const {
@@ -69,6 +102,7 @@ export const {
   transferNewToSeen, 
   addToSeenMessages, 
   addToNewMessages,
-  initilizeMessagesTemp
+  initilizeMessagesTemp,
+  updateMessageStatus
 } = messagesSlice.actions;
 export default messagesSlice.reducer;

@@ -8,7 +8,7 @@ import {
   ParticipantsContext, 
   SelectedChatContext 
 } from "@/context/contexts";
-import type { IChat, ParticipantsMap } from "@/interface/chatInterface";
+import type { ChatMap, IChat, ParticipantsMap } from "@/interface/chatInterface";
 import type { IUser } from "@/interface/interface";
 import MainLayout from "@/layouts/MainLayout";
 import { Messages } from "@/redux/slices/messages";
@@ -18,12 +18,14 @@ interface HomeProps {
   user:IUser | null;
   isDetailsOn:boolean;
   selectedChat:IChat | null;
-  chats:IChat[];
+  chatMap:ChatMap;
+  orderedChatIds:string[];
   participants:ParticipantsMap;
   messages:Messages
 }
 const Home:React.FC<HomeProps> = ({
-  chats,
+  chatMap,
+  orderedChatIds,
   isDetailsOn,
   messages,
   participants,
@@ -52,7 +54,7 @@ const Home:React.FC<HomeProps> = ({
     <MainLayout>
       <LoggedInUserContext.Provider value={user}>
         <SelectedChatContext.Provider value={selectedChat}>
-          <ChatsContext.Provider value={chats}>
+          <ChatsContext.Provider value={{chatMap, orderedChatIds}}>
             <MessagesContext.Provider value={messages}>
               <ParticipantsContext.Provider value={participants}>
                 <div className="w-full md:mt-6 h-[calc(100vh-90px)] md:h-[94vh] flex justify-center">

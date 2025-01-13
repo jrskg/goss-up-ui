@@ -15,7 +15,7 @@
 
 // export { checkConnection }
 
-import type { Participants, ParticipantsMap, ChatType, ILastMessage } from '@/interface/chatInterface';
+import type { ChatType, FileType, ILastMessage } from '@/interface/chatInterface';
 import { format, isAfter, isSameDay, isSameYear, subDays } from 'date-fns';
 
 const toggleDarkMode = (setDarkMode: boolean) => {
@@ -141,10 +141,15 @@ const getLastMessageText = (lastMessage?: ILastMessage): string => {
   return "Sent an attachment";
 }
 
-const getMapFromParticipants = (participants: Participants): ParticipantsMap => {
-  const map: ParticipantsMap = {};
-  participants.forEach(p => map[p._id] = p);
-  return map;
+const getMapFromArray = <T extends {_id: string}, U extends Record<string, T>>(arr: T[]): 
+{map:U, orderedIds:string[]} => {
+  const map:Record<string, T> = {};
+  const orderedIds:string[] = [];
+  arr.forEach(p => {
+    map[p._id] = p;
+    orderedIds.push(p._id);
+  });
+  return {map: map as U, orderedIds};
 }
 
 function throttle(func: Function, limit: number) {
@@ -158,18 +163,35 @@ function throttle(func: Function, limit: number) {
   }
 }
 
+const generateFileId = (file: File): string => {
+  return `${file.name.slice(0, 10)}-${file.size}-${file.lastModified}`;
+};
+
+const getFileType = (mimeType: string): FileType => {
+  if (mimeType.startsWith("image/")) return "image";
+  if (mimeType.startsWith("video/")) return "video";
+  if (mimeType.startsWith("audio/")) return "audio";
+  return "other";
+};
+
+const getFileExtension = (fileName: string): string | null => {
+  const extensionMatch = fileName.match(/\.(\w+)$/);
+  return extensionMatch ? extensionMatch[1] : null;
+};
+
 export {
+  getFileExtension,
+  generateFileId,
+  getFileType,
   getAvatarStyle,
   getDateStr,
   getDateStyle,
   getLastMessageText,
   getMainConatainerStyle,
-  getMapFromParticipants,
+  getMapFromArray,
   getMessageBoxStyle,
   getMessageTimestamp,
-  getNameStyle,
-  toggleDarkMode,
-  getTriangleStyle,
-  throttle
+  getNameStyle, getTriangleStyle,
+  throttle, toggleDarkMode
 };
 

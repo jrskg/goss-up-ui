@@ -30,7 +30,7 @@ const UserProfile = React.lazy(() => import('./pages/UserProfile'));
 function App() {
   const { isAuthenticated, user } = useAppSelector(state => state.user);
   const { isDetailsOn, selectedChat } = useAppSelector((state) => state.selectedChat);
-  const { chats, participants } = useAppSelector((state) => state.chats);
+  const { chatMap, orderedChatIds, participants } = useAppSelector((state) => state.chats);
   const { messages } = useAppSelector((state) => state.messages);
   const { loadUser, loading } = useAuthActions();
 
@@ -60,7 +60,8 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<Home
             user={user} 
-            chats={chats}
+            orderedChatIds={orderedChatIds}
+            chatMap={chatMap}
             isDetailsOn={isDetailsOn}
             messages={messages}
             participants={participants}

@@ -1,5 +1,12 @@
 import {SOCKET_EVENTS} from "../utils/constants";
-import { IMessage } from "./chatInterface";
+import type { DeliveryStatus, IMessage } from "./chatInterface";
+
+export interface IMessageStatusUpdatePayload {
+  roomId: string;
+  messageId: string;
+  status: DeliveryStatus;
+  senderId: string;
+}
 
 export type SocketEventMap = {
   [SOCKET_EVENTS.JOIN_ROOM]: (payload: { 
@@ -16,4 +23,6 @@ export type SocketEventMap = {
   [SOCKET_EVENTS.NEW_MESSAGE]: (payload:{roomId: string, message: IMessage}) => void;
   [SOCKET_EVENTS.USER_TYPING]: (payload: {roomId: string, userId: string, name: string}) => void;
   [SOCKET_EVENTS.USER_STOP_TYPING]: (payload: {roomId: string, userId: string, name: string}) => void;
+  [SOCKET_EVENTS.MESSAGE_STATUS_UPDATE]: (payload: IMessageStatusUpdatePayload[]) => void;
+  // [SOCKET_EVENTS.MESSAGE_STATUS_UPDATE_BULK]: (payload: IMessageStatusUpdatePayload[]) => void;
 }

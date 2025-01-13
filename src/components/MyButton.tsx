@@ -24,7 +24,7 @@ const MyButton: React.FC<BtnProps> = ({
   return (
     <div className={cn("relative w-full", className)}>
       <Button
-        className={cn("bg-blue-500 w-full hover:bg-blue-600 transition duration-500 dark:bg-dark-3 text-white dark:hover:bg-dark-4", btnClassName)}
+        className={cn("bg-blue-500 w-full hover:bg-blue-600 transition duration-200 dark:bg-dark-3 text-white dark:hover:bg-dark-4", btnClassName)}
         onClick={onClick}
         disabled={disabled || loading}
       >{loading ? <Spinner /> : icon}{title}</Button>

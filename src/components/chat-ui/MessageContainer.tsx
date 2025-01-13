@@ -7,6 +7,7 @@ import MessageCard from './MessageCard';
 import { cn } from '@/lib/utils';
 import { useSocket } from '@/context/socketContext';
 import { SOCKET_EVENTS } from '@/utils/constants';
+import { IMessageStatusUpdatePayload } from '@/interface/socketEvents';
 
 interface MessageContainerProps {
   selectedChatId: string;
@@ -47,11 +48,22 @@ const MessageContainer: React.FC<MessageContainerProps> = ({
       }
     });
 
+    if(newMessagesIds.length > 0){
+      const payload:IMessageStatusUpdatePayload[] = newMessagesIds.map((mid) => ({
+        messageId: mid,
+        status: "seen",
+        roomId: selectedChatId,
+        senderId: newMessages[mid].senderId
+      }));
+
+      socket.emit(SOCKET_EVENTS.MESSAGE_STATUS_UPDATE, payload)
+    }
+
     return () => {
       socket.off(SOCKET_EVENTS.USER_TYPING);
       socket.off(SOCKET_EVENTS.USER_STOP_TYPING);
     }
-  }, [socket, selectedChatId]);
+  }, [socket, selectedChatId, newMessagesIds, newMessages]);
   
 
   useEffect(() => {

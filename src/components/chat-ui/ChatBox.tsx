@@ -4,41 +4,14 @@ import { useChatBoxLogic } from '@/hooks/useChatBoxLogic'
 import { cn } from '@/lib/utils'
 import { setIsDetailsOn } from '@/redux/slices/selectedChat'
 import { AvatarImage } from '@radix-ui/react-avatar'
-import { FileAudioIcon, FileTextIcon, FileVideoIcon, ImageIcon, MessageCircleMoreIcon, PaperclipIcon, SendHorizonalIcon, XIcon } from 'lucide-react'
-import React, { memo, useContext, useState } from 'react'
-import { toast } from 'sonner'
-import MenuItem from '../MenuItem'
-import PopupMenu from '../PopupMenu'
+import { MessageCircleMoreIcon, SendHorizonalIcon, XIcon } from 'lucide-react'
+import React, { memo, useContext } from 'react'
 import { Avatar } from '../ui/avatar'
 import { Textarea } from '../ui/textarea'
 import MessageContainer from './MessageContainer'
+import AddAttachments from './AddAttachments'
+import SendAttachments from './SendAttachments'
 
-const menuItemData = [
-  {
-    type:"file",
-    label: "Document",
-    icon: FileTextIcon,
-    iconStyle: "text-[#d400c6] dark:text-[#d96ad1]",
-  },
-  {
-    type:"image",
-    label: "Image",
-    icon: ImageIcon,
-    iconStyle: "text-[#ff0040] dark:text-[#de7a93]",
-  },
-  {
-    type:"video",
-    label: "Video File",
-    icon: FileVideoIcon,
-    iconStyle: "text-[#4b0380] dark:text-[#ae66e3]",
-  },
-  {
-    type:"audio",
-    label: "Audio File",
-    icon: FileAudioIcon,
-    iconStyle: "text-[#055e00] dark:text-[#8beb88]",
-  }
-]
 interface ChatBoxProps {
   className?: string;
 }
@@ -46,8 +19,6 @@ const ChatBox: React.FC<ChatBoxProps> = ({
   className,
 }) => {
   console.log("CHAT BOX rendering... chatbox" + Math.random());
-  const [popupVisible, setPopupVisible] = useState(false);
-
   const { _id: userId, name: userName } = useContext(LoggedInUserContext)!;
   const participants = useContext(ParticipantsContext)!;
   const selectedChat = useContext(SelectedChatContext);
@@ -73,15 +44,16 @@ const ChatBox: React.FC<ChatBoxProps> = ({
       handleSendMessage();
     }
   }
-  const handleMenuItemClick = (type: string) => {
-    toast.success(type);
-  }
 
   return (
     <div className={cn("transition-all duration-300 bg-primary-5 dark:bg-dark-2 h-full md:rounded-tr-md md:rounded-br-md md:border-l md:dark:border-primary-1 relative", className)}>
       {
         selectedChat ? <>
-          <div onClick={handleDetailsClick} className='w-full bg-primary-1 dark:bg-dark-3 px-5 py-2 md:rounded-tr-md flex items-center gap-2 h-[65px] relative cursor-pointer'>
+          <SendAttachments selectedChatId={selectedChat._id} />
+          <div 
+            onClick={handleDetailsClick} 
+            className='w-full bg-primary-1 dark:bg-dark-3 px-5 py-2 md:rounded-tr-md flex items-center gap-2 h-[65px] relative cursor-pointer'
+          >
             <Avatar className='w-12 h-12'>
               <AvatarImage className='object-cover' src={getChatAvatar(selectedChat)} />
             </Avatar>
@@ -89,7 +61,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
               <p className='text-xl font-bold leading-none'>{getChatName(selectedChat)}</p>
               {/* <p className='text-sm'>Status</p> */}
             </div>
-            <XIcon onClick={handleCloseChat} className='absolute right-3 w-6 h-6 cursor-pointer ' />
+            <XIcon onClick={handleCloseChat} className='absolute right-3 w-6 h-6 cursor-pointer md:hidden ' />
           </div>
           <MessageContainer
             selectedChatId={selectedChat._id}
@@ -99,23 +71,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
           />
           <div className='h-[85px] absolute bottom-0 left-0 bg-primary-1 dark:bg-dark-3 w-full rounded-br-md flex items-center px-2 justify-evenly'>
             {/* <PaperclipIcon className='md:w-8 md:h-8 w-6 h-6 cursor-pointer' /> */}
-            <PopupMenu
-              TriggerElement={<PaperclipIcon className='md:w-8 md:h-8 w-6 h-6 cursor-pointer' />}
-              visible={popupVisible}
-              setVisible={setPopupVisible}
-              width={170}
-              height={200}
-            >
-              <div className='w-full h-full p-2 flex flex-col gap-2'>
-                {menuItemData.map(({icon, iconStyle, label, type}) => <MenuItem
-                  key={type}
-                  Icon={icon}
-                  label={label}
-                  iconStyle={iconStyle}
-                  onClick={() => handleMenuItemClick(type)}
-                />)}
-              </div>
-            </PopupMenu>
+            <AddAttachments selectedChatId={selectedChat._id} />
             <Textarea
               rows={2} className='resize-none w-[80%] text-md bg-primary-6 dark:bg-dark-1'
               placeholder='Type a message'
