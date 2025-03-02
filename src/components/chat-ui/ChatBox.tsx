@@ -49,7 +49,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
     <div className={cn("transition-all duration-300 bg-primary-5 dark:bg-dark-2 h-full md:rounded-tr-md md:rounded-br-md md:border-l md:dark:border-primary-1 relative", className)}>
       {
         selectedChat ? <>
-          <SendAttachments selectedChatId={selectedChat._id} />
+          <SendAttachments selectedChat={selectedChat} userId={userId} />
           <div 
             onClick={handleDetailsClick} 
             className='w-full bg-primary-1 dark:bg-dark-3 px-5 py-2 md:rounded-tr-md flex items-center gap-2 h-[65px] relative cursor-pointer'

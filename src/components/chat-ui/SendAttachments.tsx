@@ -1,8 +1,14 @@
+import { useSocket } from '@/context/socketContext';
 import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
+import type { IAttachment, IChat, IMessage } from '@/interface/chatInterface';
 import { cn } from '@/lib/utils';
+import { addToSeenMessages, transferNewToSeen } from '@/redux/slices/messages';
 import { defaultDataPerChat, IFileMetaData, uploadSelectedAttachments } from '@/redux/slices/selectedAttachment';
+import { SOCKET_EVENTS } from '@/utils/constants';
 import FileStorage from '@/utils/fileStorage';
-import React, { memo, useCallback, useMemo } from 'react';
+import React, { memo, useCallback } from 'react';
+import { toast } from 'sonner';
+import { v4 as uuid } from "uuid";
 import MyButton from '../MyButton';
 import ProgressBar from '../ProgressBar';
 import FileItem from './FileItem';
@@ -11,11 +17,12 @@ const fileStorage = FileStorage.getInstance();
 
 type SegregatedFilesType = Record<"images" | "otherFiles", IFileMetaData[]>
 interface SendAttachmentsProps {
-  selectedChatId: string;
+  selectedChat: IChat;
+  userId: string
 }
 
-const SendAttachments: React.FC<SendAttachmentsProps> = ({ selectedChatId }) => {
-  const filesDataPerChat = useAppSelector(state => state.selectedAttachment)[selectedChatId] || defaultDataPerChat;
+const SendAttachments: React.FC<SendAttachmentsProps> = ({ selectedChat, userId }) => {
+  const filesDataPerChat = useAppSelector(state => state.selectedAttachment)[selectedChat._id] || defaultDataPerChat;
   const {
     error,
     selectedFiles,
@@ -24,35 +31,55 @@ const SendAttachments: React.FC<SendAttachmentsProps> = ({ selectedChatId }) => 
   } = filesDataPerChat;
   const dispatch = useAppDispatch();
 
-  const segregatedFiles: SegregatedFilesType = useMemo(() => {
+  const { socket } = useSocket();
+
+  const segregatedFiles: SegregatedFilesType = (() => {
     const images: IFileMetaData[] = [];
     const otherFiles: IFileMetaData[] = [];
     selectedFiles.forEach(file => {
       if (file.type === "image") images.push(file);
       else otherFiles.push(file);
     });
-    return {
-      images,
-      otherFiles
-    }
-  }, [selectedFiles.length]);
+    return { images, otherFiles };
+  })();
 
+  const sendMessageAsAttachment = (attachments: IAttachment[]) => {
+    if (!socket) {
+      toast.error("Something went wrong, please try again later.");
+      return;
+    }
+    const roomId = selectedChat._id;
+    const participants = selectedChat.participants;
+    const message: IMessage = {
+      _id: uuid(),
+      chatId: roomId,
+      senderId: userId,
+      content: "",
+      createdAt: new Date().toISOString(),
+      messageType: "file",
+      attachments,
+      deliveryStatus: "sent",
+    }
+    socket.emit(SOCKET_EVENTS.SEND_MESSAGE, { roomId, message, participants, senderId: userId });
+    dispatch(transferNewToSeen(roomId));
+    dispatch(addToSeenMessages({ chatId: roomId, message }));
+  }
 
   const handleSendFiles = () => {
-    dispatch(uploadSelectedAttachments({chatId: selectedChatId}))
+    dispatch(uploadSelectedAttachments({ chatId: selectedChat._id, onUploadSucess: sendMessageAsAttachment }))
   }
 
   const removeFile = useCallback(
     (id: string) => {
-      fileStorage.removeFile(selectedChatId, id, dispatch);
+      fileStorage.removeFile(selectedChat._id, id, dispatch);
     },
-    [dispatch, selectedChatId]
+    [dispatch, selectedChat]
   );
 
   if (selectedFiles.length === 0) return null;
   return (
-    <div className="z-10 absolute bottom-24 w-[100%] max-h-[400px] flex justify-center">
-      <div className='w-[98%] lg:w-[90%] bg-[#eeeeee] dark:bg-dark-3 rounded-lg flex flex-col'>
+    <div className="z-50 absolute bottom-24 w-[100%] max-h-[400px] flex justify-center">
+      <div className='w-[98%] lg:w-[90%] pb-3 bg-[#eeeeee] dark:bg-dark-3 rounded-lg flex flex-col'>
         <div className="flex flex-col overflow-y-auto">
           {
             Object.entries(segregatedFiles).map(([type, files]) => (
@@ -66,7 +93,7 @@ const SendAttachments: React.FC<SendAttachmentsProps> = ({ selectedChatId }) => 
                 )}
               >
                 {files.map((file) => <FileItem
-                  chatId={selectedChatId}
+                  chatId={selectedChat._id}
                   key={file.id}
                   id={file.id}
                   onRemove={removeFile}
@@ -79,19 +106,28 @@ const SendAttachments: React.FC<SendAttachmentsProps> = ({ selectedChatId }) => 
             ))
           }
         </div>
-        <div className="h-16 p-4 border-t-2 rounded-b-lg border-primary-1 bg-[#eeeeee] dark:bg-dark-3 flex items-center justify-center">
-          {error && <p className='text-red-500'>{error}</p>}
-          {!loading ? (
+        <div className="h-20 p-4 border-t-2 rounded-b-lg border-primary-1 bg-[#eeeeee] dark:bg-dark-3 flex items-center justify-center">
+          {error ? (
+            <div className="w-full flex flex-col items-center gap-1">
+              <p className="text-danger dark:text-[#f53d5c] text-lg font-medium">{"this is an error"}</p>
+              <MyButton
+                className="w-[40%]"
+                btnClassName="dark:bg-red-500 dark:hover:bg-red-600"
+                title="Retry"
+                onClick={handleSendFiles}
+              />
+            </div>
+          ) : loading ? (
+            <ProgressBar progress={uploadProgress} />
+          ) : (
             <MyButton
-              className='w-[60%]'
-              btnClassName='dark:bg-dark-4 dark:hover:bg-dark-5'
-              title='Send'
+              className="w-[60%]"
+              btnClassName="dark:bg-dark-4 dark:hover:bg-dark-5"
+              title="Send"
               onClick={handleSendFiles}
             />
-          ) : (
-            <ProgressBar progress={uploadProgress} />
           )}
-          {error && <p className='text-red-500'>{error}</p>}
+
         </div>
       </div>
     </div>

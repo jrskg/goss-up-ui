@@ -1,4 +1,4 @@
-import { addFileInChat, IFileMetaData, removeFileFromChat } from "@/redux/slices/selectedAttachment";
+import { addFileInChat, IFileMetaData, removeAllFileFromChat, removeFileFromChat } from "@/redux/slices/selectedAttachment";
 import { Dispatch } from "@reduxjs/toolkit";
 import { getFileExtension, getFileType } from "./utility";
 
@@ -56,8 +56,9 @@ class FileStorage{
     return Array.from(chatFiles.values());
   }
 
-  public clearFiles(chatId: string){
+  public clearFiles(chatId: string, dispatch: Dispatch){
     this.storage.delete(chatId);
+    dispatch(removeAllFileFromChat({chatId}));
   }
 
   public getSingleFile(chatId: string, fileId :string){

@@ -37,20 +37,20 @@ export const useChatBoxLogic = (selectedChat:IChat | null, userId:string, userNa
   }
   
   const handleSendMessage = () => {
-    if(!selectedChat) return;
+    const messageContent = userMessage.trim();
+    if(!selectedChat || !messageContent || !socket) return;
     const roomId = selectedChat._id;
     const participants = selectedChat.participants;
     const message: IMessage = {
       _id: uuid(),
       chatId: roomId,
       senderId: userId,
-      content: userMessage,
+      content: messageContent,
       createdAt: new Date().toISOString(),
       messageType: "text",
       attachments: [],
       deliveryStatus: "sent"
     }
-    if(!socket) return
     if(typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     socket.emit(SOCKET_EVENTS.SEND_MESSAGE, {roomId, message, participants, senderId: userId});
     dispatch(transferNewToSeen(roomId));

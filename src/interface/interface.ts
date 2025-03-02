@@ -158,3 +158,12 @@ export interface FriendsResponseData {
 //   messageType: MessageType;
 //   content: string;
 // }
+
+
+export interface IUploadSignature{
+  signature: string;
+  timestamp: number;
+  apiKey: string;
+  cloudName: string;
+  folderName: string
+}

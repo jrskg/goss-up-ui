@@ -4,7 +4,7 @@ import { io, Socket } from "socket.io-client";
 
 export type TypedSocket = Socket<SocketEventMap, SocketEventMap>;
 
-interface SocketContextValue{
+interface SocketContextValue {
   socket: TypedSocket | null;
   reconnectSocket: () => void
 }
@@ -19,7 +19,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   const isInitialized = useRef(false);
 
   const initializeSocket = () => {
-    if(socket) socket.disconnect();
+    if (socket) socket.disconnect();
     const newSocket: TypedSocket = io("http://localhost:3000", {
       transports: ["websocket"],
     });
@@ -31,15 +31,15 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   }
 
   useEffect(() => {
-    if(isInitialized.current) return;
+    if (isInitialized.current) return;
     isInitialized.current = true;
     initializeSocket();
     return () => {
-      if(socket) socket.disconnect();
+      if (socket) socket.disconnect();
     }
   }, []);
 
-  return <SocketContext.Provider value={{reconnectSocket, socket}}>{children}</SocketContext.Provider>
+  return <SocketContext.Provider value={{ reconnectSocket, socket }}>{children}</SocketContext.Provider>
 }
 
 export const useSocket = () => {

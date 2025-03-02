@@ -29,11 +29,9 @@ const MessageContainer: React.FC<MessageContainerProps> = ({
   const { newMessages, seenMessages, seenMessagesIds, newMessagesIds } = allMessages[selectedChatId];
 
   const {socket} = useSocket();
-
   useEffect(() => {
     if(!socket) return;
     socket.on(SOCKET_EVENTS.USER_TYPING, ({roomId, name, userId}) => {
-      console.log("User typing...", Math.round(Math.random() * 100));
       if(roomId === selectedChatId){
         setTypingUsers(prev => {
           if(prev.find(u => u.userId === userId)) return prev;
@@ -42,7 +40,6 @@ const MessageContainer: React.FC<MessageContainerProps> = ({
       }
     });
     socket.on(SOCKET_EVENTS.USER_STOP_TYPING, ({roomId, userId}) => {
-      console.log("User stopped typing...", Math.round(Math.random() * 100));
       if(roomId === selectedChatId){
         setTypingUsers(prev => prev.filter(u => u.userId !== userId));
       }
