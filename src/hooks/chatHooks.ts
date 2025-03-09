@@ -23,21 +23,25 @@ type ChatReturn = {
 const useSetSelectedChat = () => {
   const dispatch = useAppDispatch();
   const selectedChatRef = useSelectedChatRef();
-  const {socket} = useSocket();
+  const { socket } = useSocket();
 
   const handleSelectedChat = (chat: IChat | null) => {
-    if(chat && socket){
-      socket.emit(SOCKET_EVENTS.JOIN_ROOM, {
-        currRoomId: chat._id,
-        prevRoomId: selectedChatRef.current?._id || null
-      })
+    if (selectedChatRef.current?._id !== chat?._id) {
+      if (socket) {
+        if (chat) {
+          socket.emit(SOCKET_EVENTS.JOIN_ROOM, {
+            currRoomId: chat._id,
+            prevRoomId: selectedChatRef.current?._id || null
+          })
+        }
+        else if (selectedChatRef.current) {
+          socket.emit(SOCKET_EVENTS.LEAVE_ROOM, {
+            roomId: selectedChatRef.current._id
+          })
+        }
+      }
     }
-    if(!chat && socket){
-      socket.emit(SOCKET_EVENTS.LEAVE_ROOM, {
-        roomId: selectedChatRef.current?._id!
-      })
-    }
-    if(selectedChatRef.current) dispatch(transferNewToSeen(selectedChatRef.current._id));
+    if (selectedChatRef.current) dispatch(transferNewToSeen(selectedChatRef.current._id));
     dispatch(setSelectedChat(chat));
     selectedChatRef.current = chat;
   }
@@ -45,21 +49,21 @@ const useSetSelectedChat = () => {
   return handleSelectedChat
 }
 
-const useGetAllChats = (orderedChatIds:string[], rootElement:React.MutableRefObject<HTMLDivElement | null>) => {
+const useGetAllChats = (orderedChatIds: string[], rootElement: React.MutableRefObject<HTMLDivElement | null>) => {
   const [loading, setLoading] = useState(false);
   const [moreLoading, setMoreLoading] = useState(false);
   const dispatch = useAppDispatch();
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
 
-  const {setLastElement} = useInfiniteScroll({
-    root:rootElement.current,
-    threshold:0.5,
+  const { setLastElement } = useInfiniteScroll({
+    root: rootElement.current,
+    threshold: 0.5,
     isLoading: moreLoading,
     hasMore,
-    onLoadMore: async() => {
+    onLoadMore: async () => {
       setPage(prevPage => prevPage + 1);
-      await getAllChats(page + 1); 
+      await getAllChats(page + 1);
     }
   })
 
@@ -130,7 +134,7 @@ const useGetParticipantsInfo = (participants: ParticipantsMap, userId: string) =
 
 const useChatActions = (loggedInUserId: string) => {
   const [loading, setLoading] = useState(false);
-  const {chatMap, orderedChatIds} = useContext(ChatsContext)!;
+  const { chatMap, orderedChatIds } = useContext(ChatsContext)!;
   const createOneToOneChat = async (userId: string): Promise<ChatReturn> => {
     const chatId = orderedChatIds.find(chid => {
       const ch = chatMap[chid];
@@ -192,20 +196,20 @@ const useChatActions = (loggedInUserId: string) => {
     } finally { setLoading(false) }
     return false;
   }
-  const leaveGroup = async (groupId: string): Promise<boolean> => {
+  const leaveGroup = async (groupId: string): Promise<IChat | null> => {
     try {
       setLoading(true);
-      const {data} = await instance.delete<ResponseWithoutData>(`/chat/group/leave?groupId=${groupId}`);
-      if(data.success){
+      const { data } = await instance.delete<ResponseWithData<IChat>>(`/chat/group/leave?groupId=${groupId}`);
+      if (data.success) {
         toast.info(data.message);
-        return true;
+        return data.data;
       }
     } catch (error) {
-      if(error instanceof AxiosError && error.response){
+      if (error instanceof AxiosError && error.response) {
         toast.error(error.response.data.message);
       }
-    }finally{ setLoading(false) }
-    return false;
+    } finally { setLoading(false) }
+    return null;
   }
   return {
     toggleAdmin,
@@ -269,7 +273,7 @@ const useUpdateGroupChat = (groupId: string) => {
   const [nameLoading, setNameLoading] = useState(false);
   const [uploadPercentage, setUploadPercentage] = useState(0);
 
-  const uploadGroupIcon = async (imageFile: File):Promise<Image | null> => {
+  const uploadGroupIcon = async (imageFile: File): Promise<Image | null> => {
     const formData = new FormData();
     formData.append("groupId", groupId);
     formData.append("groupIcon", imageFile);
@@ -282,12 +286,12 @@ const useUpdateGroupChat = (groupId: string) => {
         },
         onUploadProgress: (progressEvent) => {
           const progress = progressEvent.total
-            ? Math.round((progressEvent.loaded * 100) / progressEvent.total) 
+            ? Math.round((progressEvent.loaded * 100) / progressEvent.total)
             : 0;
           setUploadPercentage(progress);
         }
       });
-      if(data.success){
+      if (data.success) {
         setUploadPercentage(100);
         toast.success(data.message);
         return data.data;
@@ -297,11 +301,11 @@ const useUpdateGroupChat = (groupId: string) => {
         toast.error(error.response.data.message);
       }
       return null;
-    }finally{setImageLoading(false)}
+    } finally { setImageLoading(false) }
     return null;
   }
 
-  const updateGroupName = async (groupName: string):Promise<boolean> => {
+  const updateGroupName = async (groupName: string): Promise<boolean> => {
     try {
       setNameLoading(true);
       const { data } = await instance.put<ResponseWithoutData>("/chat/group/name", { groupName, groupId });

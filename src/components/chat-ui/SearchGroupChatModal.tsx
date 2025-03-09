@@ -93,7 +93,7 @@ const SearchGroupChatModal: React.FC<Props> = ({
       }else{
         try {
           setFetchChatLoading(true);
-          const {data} = await instance.get<ResponseWithData<IGetSingleChatResponse>>(`/chat/groupchat/${chatId}`);
+          const {data} = await instance.get<ResponseWithData<IGetSingleChatResponse>>(`/chat/${chatId}`);
           if(data.success){
             dispatch(addToChatState({chats: [data.data.chatData], participants: data.data.participants}));
             handleSelectedChat(data.data.chatData)

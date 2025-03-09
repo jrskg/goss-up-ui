@@ -34,7 +34,7 @@ function App() {
   const { messages } = useAppSelector((state) => state.messages);
   const { loadUser, loading } = useAuthActions();
 
-  useGlobalSocketListeners(selectedChat, user);
+  useGlobalSocketListeners(selectedChat, user, chatMap, participants);
 
   useEffect(() => {
     onMessage(messaging, (payload) => {

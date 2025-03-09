@@ -1,8 +1,8 @@
 import { SelectedChatContext } from '@/context/contexts';
-import { useCreateGroupChat, useSetSelectedChat } from '@/hooks/chatHooks';
+import { useChatDetailsSocketEmits, useChatDetailsUpdates } from '@/hooks/chatDetailsHooks';
+import { useCreateGroupChat } from '@/hooks/chatHooks';
 import { useAppDispatch } from '@/hooks/hooks';
 import { IChat } from '@/interface/chatInterface';
-import { addParticipant, addToChatState, updateChat } from '@/redux/slices/chats';
 import { validateGroupName } from '@/utils/validation';
 import { XIcon } from 'lucide-react';
 import React, { Dispatch, memo, SetStateAction, useCallback, useContext, useRef, useState } from 'react';
@@ -35,7 +35,14 @@ const CreateGroupChatModal: React.FC<Props> = ({
   const loadingRef = useRef(false);
   const dispatch = useAppDispatch();
   const selectedChat = useContext(SelectedChatContext)!;
-  const handleSelectedChat = useSetSelectedChat();
+  const {
+    whenGroupChatCreated,
+    whenParticipantsAdded
+  } = useChatDetailsUpdates();
+
+  const {
+    emitCreateOrAddParticipants
+  } = useChatDetailsSocketEmits();
 
   const handleGroupNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setGroupName(e.target.value);
@@ -64,9 +71,11 @@ const CreateGroupChatModal: React.FC<Props> = ({
         ...selectedChat,
         participants: [...selectedChat.participants, ...newParticipants]
       };
-      handleSelectedChat(updatedChat);
-      dispatch(updateChat(updatedChat));
-      dispatch(addParticipant(response));
+      // handleSelectedChat(updatedChat);
+      // dispatch(updateChat(updatedChat));
+      // dispatch(addParticipant(response));
+      whenParticipantsAdded(updatedChat, response, dispatch);
+      emitCreateOrAddParticipants(updatedChat._id, updatedChat.participants);
     } else {
       const { error, isValid } = validateGroupName(groupName);
       setGroupNameError(error);
@@ -79,8 +88,10 @@ const CreateGroupChatModal: React.FC<Props> = ({
       const response = await createGroupChat(groupName.trim(), selectedFriends.map(f => f.id));
       loadingRef.current = false;
       if (!response) return;
-      dispatch(addToChatState({ chats: [response.chat], participants: response.participants }));
-      handleSelectedChat(response.chat);
+      // dispatch(addToChatState({ chats: [response.chat], participants: response.participants }));
+      // handleSelectedChat(response.chat);
+      whenGroupChatCreated(response.chat, response.participants, dispatch);
+      emitCreateOrAddParticipants(response.chat._id, response.chat.participants);
     }
     resetModalState();
     onClose(false);

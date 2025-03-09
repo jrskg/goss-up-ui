@@ -1,10 +1,11 @@
 import { LoggedInUserContext, ParticipantsContext, SelectedChatContext } from '@/context/contexts';
+import { useChatDetailsSocketEmits, useChatDetailsUpdates } from '@/hooks/chatDetailsHooks';
 import { useChatActions, useGetParticipantsInfo, useSetSelectedChat } from '@/hooks/chatHooks';
 import { useAppDispatch } from '@/hooks/hooks';
 import type { Participants } from '@/interface/chatInterface';
 import { cn } from '@/lib/utils';
-import { addToChatState, removeChat, removeParticipantFromChatState, toggleAdminInChatState } from '@/redux/slices/chats';
-import { removeParticipantFromSelectedChat, setIsDetailsOn, toggleAdminInSelectedChat } from '@/redux/slices/selectedChat';
+import { addToChatState, removeChat } from '@/redux/slices/chats';
+import { setIsDetailsOn } from '@/redux/slices/selectedChat';
 import { getJITBtnStyle } from '@/utils/styleUtils';
 import { DialogDescription } from '@radix-ui/react-dialog';
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
@@ -61,6 +62,15 @@ const ChatDetails: React.FC<ChatDetailsProps> = ({
   }, [selectedChat, userId]);
 
   const handleSelectedChat = useSetSelectedChat();
+  const {
+    whenAdminToggled,
+    whenParticipantRemoved,
+  } = useChatDetailsUpdates();
+  const {
+    emitAdminToggle,
+    emitParticipantRemove,
+    emitLeaveGroup
+  } = useChatDetailsSocketEmits();
 
   const handleDetailClose = () => {
     dispatch(setIsDetailsOn(false));
@@ -88,17 +98,17 @@ const ChatDetails: React.FC<ChatDetailsProps> = ({
     if (!clickedMember || !selectedChat) return;
     const response = await toggleAdmin(selectedChat._id, clickedMember.memberId);
     if (response) {
-      dispatch(toggleAdminInChatState({ chatId: selectedChat._id, participantId: clickedMember.memberId }))
-      dispatch(toggleAdminInSelectedChat(clickedMember.memberId));
+      whenAdminToggled(selectedChat._id, clickedMember.memberId, dispatch);
+      emitAdminToggle(selectedChat._id, clickedMember.memberId, selectedChat.participants);
     }
     setClickedMember(null);
   }
-  const handleRemoveMember = async () => {
+  const handleRemoveParticipant = async () => {
     if (!clickedMember || !selectedChat) return;
     const response = await removeFromGroup(selectedChat._id, clickedMember.memberId);
     if (response) {
-      dispatch(removeParticipantFromChatState({ chatId: selectedChat._id, participantId: clickedMember.memberId }));
-      dispatch(removeParticipantFromSelectedChat(clickedMember.memberId));
+      whenParticipantRemoved(selectedChat._id, clickedMember.memberId, dispatch);
+      emitParticipantRemove(selectedChat._id, clickedMember.memberId, selectedChat.participants);
     }
     setClickedMember(null);
   }
@@ -109,6 +119,7 @@ const ChatDetails: React.FC<ChatDetailsProps> = ({
     if (response) {
       dispatch(removeChat(selectedChat._id));
       handleSelectedChat(null);
+      emitLeaveGroup(selectedChat._id, response);
     }
   }
 
@@ -142,7 +153,7 @@ const ChatDetails: React.FC<ChatDetailsProps> = ({
               <p onClick={() => navigate(`/user/${clickedMember.memberId}`)} className={getJITBtnStyle}>View {clickedMember.name}</p>
               {isLoggedInUserAdmin && <>
                 <p onClick={handleToggleAdmin} className={getJITBtnStyle}>{clickedMember.isAdmin ? "Demote from" : "Promote to"} admin</p>
-                <p onClick={handleRemoveMember} className={getJITBtnStyle}>Remove {clickedMember.name}</p>
+                <p onClick={handleRemoveParticipant} className={getJITBtnStyle}>Remove {clickedMember.name}</p>
               </>}
             </div>}
             <div className='mt-3'>

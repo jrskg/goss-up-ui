@@ -1,10 +1,9 @@
 import { SelectedChatContext } from '@/context/contexts';
-import { useSetSelectedChat, useUpdateGroupChat } from '@/hooks/chatHooks';
+import { useChatDetailsSocketEmits, useChatDetailsUpdates } from '@/hooks/chatDetailsHooks';
+import { useUpdateGroupChat } from '@/hooks/chatHooks';
 import { useAppDispatch } from '@/hooks/hooks';
 import type { GroupChat, IChat } from '@/interface/chatInterface';
 import { cn } from '@/lib/utils';
-import { updateChat } from '@/redux/slices/chats';
-import { AppDispatch } from '@/redux/store';
 import { validateGroupName } from '@/utils/validation';
 import { CameraIcon } from 'lucide-react';
 import React, { Dispatch, SetStateAction, useContext, useEffect, useRef, useState } from 'react';
@@ -36,11 +35,10 @@ const UpdateGroupModal: React.FC<Props> = ({
     uploadGroupIcon
   } = useUpdateGroupChat(selectedChat._id);
   const dispatch = useAppDispatch();
-  const handleSelectedChat = useSetSelectedChat();
-  const handleStateUpdates = (updatedChat: IChat) => (dispatch: AppDispatch) => {
-    handleSelectedChat(updatedChat);
-    dispatch(updateChat(updatedChat));
-  }
+  const {whenChatUpdated} = useChatDetailsUpdates();
+  const {
+    emitNameAndIconChange,
+  } = useChatDetailsSocketEmits();
 
   const resetModal = () => {
     if (selectedChat.chatType === "group") {
@@ -81,7 +79,8 @@ const UpdateGroupModal: React.FC<Props> = ({
     if (!response) return;
     setGroupIcon(response.image);
     const updatedChat: IChat = { ...selectedChat as GroupChat, groupIcon: response };
-    dispatch(handleStateUpdates(updatedChat));
+    whenChatUpdated(updatedChat, dispatch);
+    emitNameAndIconChange(updatedChat);
   }
 
   const handleUpdateGroupName = async () => {
@@ -89,7 +88,8 @@ const UpdateGroupModal: React.FC<Props> = ({
     const response = await updateGroupName(groupName);
     if (!response) return;
     const updatedChat: IChat = { ...selectedChat as GroupChat, groupName };
-    dispatch(handleStateUpdates(updatedChat));
+    whenChatUpdated(updatedChat, dispatch);
+    emitNameAndIconChange(updatedChat);
   }
   return (
     <MyDialog
