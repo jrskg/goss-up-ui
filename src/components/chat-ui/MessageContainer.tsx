@@ -32,7 +32,7 @@ const MessageContainer: React.FC<MessageContainerProps> = ({
   useEffect(() => {
     if(!socket) return;
     socket.on(SOCKET_EVENTS.USER_TYPING, ({roomId, name, userId}) => {
-      if(roomId === selectedChatId){
+      if(roomId === selectedChatId && userId !== loggedInUserId){
         setTypingUsers(prev => {
           if(prev.find(u => u.userId === userId)) return prev;
           return [...prev, {userId, name}]

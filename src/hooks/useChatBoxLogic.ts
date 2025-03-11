@@ -17,7 +17,7 @@ export const useChatBoxLogic = (selectedChat:IChat | null, userId:string, userNa
     if(!socket || !selectedChat) return;
     const roomId = selectedChat._id;
     socket.emit(SOCKET_EVENTS.USER_TYPING, {name: userName, userId, roomId});
-  }, 1500), [socket, selectedChat, userName, userId]);
+  }, 2000), [socket, selectedChat, userName, userId]);
 
   useEffect(() => {
     setUserMessage("");
